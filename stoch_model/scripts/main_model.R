@@ -50,25 +50,25 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             recover = 1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
             init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]/2))
 
-theta[["r0"]] <- 1
-theta[["betavol"]] <- 0.3
-
-theta[["beta"]] <- theta[["r0"]]#*(theta[["recover"]]+theta[["incubation"]])
+# Pick ICs for random walk
+theta[["r0"]] <- 2
+theta[["betavol"]] <- 0.5
+theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]])
 
 theta_initNames <- c("exp1","exp2","inf1","inf2","cases","reports") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
 
-# Run SMC and output likelihood
+# Run SMC and output likelihooda
 output_smc <- smc_model(theta,
                         nn=1e3 # number of particles
                         )
 output_smc$lik
 
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=20, # number of repeats
-             nn=1e2, # number of particles
+plot_outputs(rep_plot=200, # number of repeats
+             nn=1e3, # number of particles
              cut_off = 0 # omit final X days of R calculations
              )
 

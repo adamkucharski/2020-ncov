@@ -14,11 +14,11 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
   for(ii in seq((t_start+dt),t_end,dt) ){
     
     # transitions
-    new_E1 <- (infectious_t1+infectious_t2)*theta[["beta"]]*simzetaA # stochastic transmission
+    new_E1 <- (infectious_t1+infectious_t2)*simzetaA # stochastic transmission
     E1_to_E2 <- exposed_t1*theta[["incubation"]]*2 # as two compartments
     E2_to_I1 <- exposed_t2*theta[["incubation"]]*2
-    I1_to_I2 <- theta[["recover"]]*infectious_t1*2
-    I2_to_R <- theta[["recover"]]*infectious_t2*2
+    I1_to_I2 <- infectious_t1*theta[["recover"]]*2
+    I2_to_R <- infectious_t2*theta[["recover"]]*2
     I_to_C <- E2_to_I1
     C_to_Rep <- theta[["report"]]*cases_t
     
@@ -60,11 +60,12 @@ smc_model <- function(theta,nn){
   storeL[,1,"inf2"] <- theta[["init_cases"]]
   #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
   simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
-  simzeta[1,] <- theta[["beta"]]*exp(simzeta[1,]) # ensure positive
+  simzeta[1,] <- exp(simzeta[1,])*theta[["beta"]] # define IC
   
   # PARTICLE FILTER GOES HERE
   # Latent variables
   Rep_traj = matrix(NA,ncol=1,nrow=ttotal)
+  C_traj = matrix(NA,ncol=1,nrow=ttotal)
   I_traj = matrix(NA,ncol=1,nrow=ttotal)
   beta_traj = matrix(NA,ncol=1,nrow=ttotal);
   w <- matrix(NA,nrow=nn,ncol=ttotal); w[,1] <- 1  # weights
@@ -119,18 +120,20 @@ smc_model <- function(theta,nn){
   locs <-  sample(1:nn,prob = W[1:nn,tt],replace = T)
   l_sample[ttotal] <- locs[1]
   Rep_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports"]
+  C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
   I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf1"]+storeL[l_sample[ttotal],ttotal,"inf2"]
   beta_traj[ttotal,] <- simzeta[ttotal,l_sample[ttotal]]
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
     Rep_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports"]
+    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
     I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
     beta_traj[ii-1,] <- simzeta[ii-1,l_sample[ii-1]]
   }
  
 
-  return(list(Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+  return(list(C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
   
   
 }
@@ -242,6 +245,26 @@ simple_sim <- function(){
 
 }
 
+MLE_check <- function(){
+  
+  beta_tab <- seq(0.01,1,0.01)
+  store_lik <- NULL
+    
+  for(ii in 1:length(beta_tab)){
+    
+    theta[["betavol"]] <- beta_tab[ii]
+    
+    # Run SMC and output likelihooda
+    output_smc <- smc_model(theta,
+                            nn=1e3 # number of particles
+    )
+    store_lik <- rbind(store_lik,c(theta[["betavol"]],output_smc$lik))
+    
+  }
+
+  store_lik
+  
+}
 
 
 

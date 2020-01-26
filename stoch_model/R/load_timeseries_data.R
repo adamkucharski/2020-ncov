@@ -1,9 +1,12 @@
 # Timeseries data
 
 # Define values
+omit_recent <- 0
 start_date <- as.Date("2019-12-10")
-end_date <- max(case_data_in$date)-1 # most recent date (remove one day)
+end_date <- max(case_data_in$date) - omit_recent # omit recent day?
 date_range <- seq(start_date,end_date,1)
+
+wuhan_travel_restrictions <- as.Date("2020-01-23")
 
 # load data
 case_data <- case_data_in
