@@ -1,0 +1,10 @@
+Realised there is now quite a lot of temporal data in the international cases, so built a simple stochastic growth process for the number of cases in China (2 parameters - daily growth and noise), and coupled with a separate observation process for the top 30 countries at risk of exports (based on the link in Roz's post above). Basically the Imperial calc but done over time with stochastic fluctuation in infections. I haven't got fitting set up properly yet (ideally need to do SMC with priors on reporting delay etc.) but a quick initial look at plausible parameters suggests pretty high numbers - probably because of all the cases that appeared in lower risk places like France yesterday.
+
+Will keep developing this, but thoughts/comments welcome.
+
+
+# TO DO LIST:
+
+- Add exposed compartment
+- Set up R0 estimation MCMC sampler
+- Test model on different spatial kernels and fitting periods

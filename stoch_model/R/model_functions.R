@@ -1,0 +1,225 @@
+# Process model for simulation --------------------------------------------
+
+process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
+  
+  # simTab <- storeL[,ii-1,]; t_start = 1; t_end = 2; dt = 1; simzetaA <- simzeta[,1]
+  
+  infections_t <- simTab[,"inf"] # input function
+  cases_t <- simTab[,"cases"] # input function
+  reports_t <- simTab[,"reports"] # input function
+  
+  for(ii in seq((t_start+dt),t_end,dt) ){
+    
+    new_I <- infections_t*theta[["beta"]]*simzetaA # growth function
+    I_to_R <- theta[["recover"]]*infections_t
+    I_to_C <- new_I
+    C_to_Rep <- theta[["report"]]*cases_t
+    infections_t <- infections_t + new_I - I_to_R
+    cases_t <- cases_t + I_to_C
+    reports_t <- C_to_Rep
+  }
+  
+  simTab[,"inf"] <- infections_t # output
+  simTab[,"cases"] <- cases_t # output
+  simTab[,"reports"] <- reports_t # output
+  
+  simTab
+  
+}
+
+# SMC function --------------------------------------------
+
+smc_model <- function(theta,nn){
+  
+  # Assumptions - using daily growth rate
+  ttotal <- t_period
+  dt <- 1
+  t_length <- ttotal/dt
+  
+  storeL <- array(0,dim=c(nn,t_length, length(theta_initNames)),dimnames = list(NULL,NULL,theta_initNames))
+  
+  # Initial condition
+  storeL[,1,"inf"] <- theta[["init_cases"]]
+  simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
+  
+  # PARTICLE FILTER GOES HERE
+  # Latent variables
+  C_traj = matrix(NA,ncol=1,nrow=ttotal)
+  I_traj = matrix(NA,ncol=1,nrow=ttotal)
+  beta_traj = matrix(NA,ncol=1,nrow=ttotal);
+  w <- matrix(NA,nrow=nn,ncol=ttotal); w[,1] <- 1  # weights
+  W <- matrix(NA,nrow=nn,ncol=ttotal)
+  A <- matrix(NA,nrow=nn,ncol=ttotal)
+  l_sample <- rep(NA,ttotal)
+  lik_values <- rep(NA,ttotal)
+
+  # Iterate through steps
+  
+  for(tt in 2:ttotal){
+    
+    # Add random walk on transmission ?
+    #simzeta[tt,] <- simzeta[tt-1,]*simzeta[tt,]
+    
+    # run process model
+    storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[,tt-1])
+    
+    # calculate weights
+    caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
+    w[,tt] <- AssignWeights(caseDiff,case_data_matrix[tt,],nn) 
+    
+    # normalise particle weights
+    sum_weights <- sum(w[1:nn,tt])
+    W[1:nn,tt] <- w[1:nn,tt]/sum_weights
+    
+    # resample particles by sampling parent particles according to weights:
+    rand_vals <- runif(nn,0,1)
+    cumsum_W <- cumsum(W[1:nn,tt])
+    pickA <- c(1:length(cumsum_W))
+    
+    for (j in 1:nn){
+      locs <- pickA[cumsum_W >= rand_vals[j]]
+      A[j, tt] <- locs[1]
+    }
+    
+    # Resample particles for corresponding variables
+    storeL[,tt,] <- storeL[ A[, tt] ,tt,]
+    #simzeta[,tt] <- simzeta[ A[, tt] ,tt] #- random walk on beta?
+    
+
+  } # END PARTICLE LOOP
+  
+  # Estimate likelihood:
+  for(tt in 1:ttotal){
+    lik_values[tt] = log(sum(w[1:nn,tt])) # log-likelihoods
+  }
+  
+  likelihood0 = -ttotal*log(nn)+ sum(lik_values) # log-likelihoods
+  
+  # Sample latent variables:
+  rand_vals <- runif(1,0,1)
+  cumsum_W <- cumsum(W[1:nn,ttotal])
+  pickA <- c(1:length(cumsum_W))
+  locs <- pickA[cumsum_W >= rand_vals]
+  l_sample[ttotal] <- locs[1]
+  C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
+  I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf"]
+  beta_traj[ttotal,] <- simzeta[l_sample[ttotal],ttotal]
+  
+  for(ii in seq(ttotal,2,-1)){
+    l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
+    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
+    I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf"]
+    beta_traj[ii-1,] <- simzeta[l_sample[ii-1],ii-1]
+  }
+ 
+
+  return(list(C_trace=C_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+  
+  
+}
+
+
+# Likelihood calc for SMC --------------------------------------------
+
+AssignWeights <- function(x_val,case_data,nn){
+  
+  # case_data <- case_data_matrix[ttotal,]; x_val <- caseDiff
+  
+  # Scale for air travel
+  x_scaled <- x_val * passengers_daily / wuhan_area
+  
+  x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
+  
+  #x_expected <- x_scaled[case_data$time]*case_data$export_probability # extract x values for observed data
+  
+  # Note here rows are particles, cols are locations.
+  x_lam <- x_expected; dim(x_lam) <- NULL # flatten data on expectation
+  y_lam <- rep(case_data,nn); #dim(y_lam) <- NULL
+  
+  # Calculation likelihood
+  loglik <- dpois(y_lam,lambda=x_lam,log=T)
+  
+  loglikSum <- rowSums(matrix(loglik,nrow=nn,byrow=T)) 
+  
+  exp(loglikSum) # convert to normal probability
+  
+}
+
+# Likelihood calc (DEPRECATED) --------------------------------------------
+
+likelihood_calc <- function(x_val,case_data_matrix){
+  
+  # Scale for air travel
+  x_scaled <- x_val * passengers_daily / wuhan_area
+  
+  x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
+  
+  #x_expected <- x_scaled[case_data$time]*case_data$export_probability # extract x values for observed data
+  
+  x_lam <- x_expected; dim(x_lam) <- NULL
+  y_lam <- case_data_matrix; dim(y_lam) <- NULL
+  
+  # Define likelihood
+  loglik <- dpois(y_lam,lambda=x_lam,log=T)
+  
+  sum(loglik)
+  
+}
+
+
+# Simple simulation function calc --------------------------------------------
+
+simple_sim <- function(){
+  
+  
+  # Assumptions - using daily growth rate
+  ttotal <- t_period
+  nn <- 100
+  dt <- 1
+  t_length <- ttotal/dt
+  
+  storeL <- array(0,dim=c(nn,t_length, length(theta_initNames)),dimnames = list(NULL,NULL,theta_initNames))
+  
+  # Initial condition
+  storeL[,1,"inf"] <- theta[["init_cases"]]
+  simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
+  
+  for(ii in 2:ttotal){
+    storeL[,ii,] <- process_model(ii-1,ii,dt,theta,storeL[,ii-1,],simzeta[,ii-1])
+  }
+
+  # Calculate likelihood
+  log_lik <- apply(storeL[,,"cases"],1,function(x){likelihood_calc(x,case_data_matrix)})
+  
+  #Calculate relative probability of curves
+  relative_prob <- exp(log_lik)/max(exp(log_lik))
+  
+  par(mfrow=c(3,1),mar=c(2,3,1,1),mgp=c(2,0.7,0))
+  
+  
+  # Plot outputs
+  
+  plot(date_range,storeL[1,,1],col="white",ylim=c(0,1e5),xlab="",ylab="cases in China")
+  for(ii in 1:nn){
+    lines(date_range,storeL[ii,,"inf"],col=rgb(0,0,1,relative_prob[ii]))
+  }
+  
+  # Plot international cases
+  plot(date_range,case_time,pch=19,ylab="international cases")
+  
+  # Plot daily growth rate
+  plot(date_range,simzeta[1,],col="white",ylim=c(0,3),xlab="",ylab="daily growth rate")
+  for(ii in 1:nn){
+    lines(date_range,simzeta[ii,],col=rgb(0,0,1,relative_prob[ii]))
+  }
+  
+  dev.copy(png,paste("plots/case_inference.png",sep=""),units="cm",width=10,height=15,res=150)
+  dev.off()
+  
+
+}
+
+
+
+
+
