@@ -44,9 +44,9 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             incubation = 1/as.numeric(thetaR_IC[thetaR_IC$param=="incubation","value"]),
             report = 1/as.numeric(thetaR_IC[thetaR_IC$param=="report","value"]),
             recover = 1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
-            init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]/2),
-            passengers=as.numeric(thetaR_IC[thetaR_IC$param=="outbound_travel","value"]/2),
-            pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]/2),
+            init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"])/2,
+            passengers=as.numeric(thetaR_IC[thetaR_IC$param=="outbound_travel","value"]),
+            pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]),
             travel_frac=NA
             )
 
@@ -69,8 +69,8 @@ output_smc <- smc_model(theta,
 output_smc$lik
 
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=200, # number of repeats
-             nn=1e3, #number of particles
-             cut_off = as.numeric(end_date - wuhan_travel_restrictions) # omit final X days for R calculations?
+plot_outputs(rep_plot=50, # number of repeats
+             nn=500, #number of particles
+             cut_off = max(0,as.numeric(end_date - wuhan_travel_restrictions)) # omit final X days for R calculations?
              )
 

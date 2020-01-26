@@ -81,6 +81,7 @@ plot_outputs <- function(rep_plot,nn,cut_off){
   polygon(c(date_range,rev(date_range)),c(fit_int_cases(Rep_quantile[1,]),rev(fit_int_cases(Rep_quantile[5,]))),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_range,fit_int_cases(Rep_quantile[3,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
 
+  lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   points(date_range,case_time)
   title(LETTERS[3],adj=0)
   

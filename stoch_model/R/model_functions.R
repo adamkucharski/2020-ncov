@@ -2,7 +2,7 @@
 
 process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   
-  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 0.1; simzetaA <- simzeta[1,]
+  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 0.1; simzetaA <- simzeta[1,]; travelF=theta[["travel_frac"]]
   
   susceptible_t <- simTab[,"sus"] # input function
   exposed_t1 <- simTab[,"exp1"] # input function
