@@ -86,9 +86,9 @@ smc_model <- function(theta,nn,dt=0.25){
   simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
   simzeta[1,] <- exp(simzeta[1,])*theta[["beta"]] # define IC
   
-  # PARTICLE FILTER GOES HERE
   # Latent variables
   Rep_traj = matrix(NA,ncol=1,nrow=ttotal)
+  S_traj = matrix(NA,ncol=1,nrow=ttotal)
   C_traj = matrix(NA,ncol=1,nrow=ttotal)
   I_traj = matrix(NA,ncol=1,nrow=ttotal)
   beta_traj = matrix(NA,ncol=1,nrow=ttotal);
@@ -148,19 +148,21 @@ smc_model <- function(theta,nn,dt=0.25){
   l_sample[ttotal] <- locs[1]
   Rep_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports"]
   C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
+  S_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"sus"]
   I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf1"]+storeL[l_sample[ttotal],ttotal,"inf2"]
   beta_traj[ttotal,] <- simzeta[ttotal,l_sample[ttotal]]
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
     Rep_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports"]
+    S_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"sus"]
     C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
     I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
     beta_traj[ii-1,] <- simzeta[ii-1,l_sample[ii-1]]
   }
  
 
-  return(list(C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+  return(list(S_trace=S_traj,C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
   
   
 }

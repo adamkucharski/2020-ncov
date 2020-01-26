@@ -42,7 +42,7 @@ Parameters used in the model are as follows:
 | ----------- | ----------- |
 | Incubation period      | 4 days       |
 | Infectious period   | 3 days        |
-| Delay from onset-to-confirmation   | 6 days        |
+| Delay onset-to-confirmation   | 6 days        |
 | Daily outbound passengers   | 3300        |
 | Population at risk   | 10m        |
 | Transmission volatility   | 0.3        |
