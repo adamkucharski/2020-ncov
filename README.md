@@ -4,7 +4,7 @@ Analysis of the 2020 nCoV outbreak.
 
 ### Guide to files for `stoch_model`
 
-This is a stochastic SIR model implemented using Euler-Maruyama, with likelihood estimated using SMC by fitting to exported cases over time in countries with high connectivity to Wuhan.
+This is a stochastic SEIR model implemented using Euler-Maruyama, with likelihood estimated using SMC by fitting to exported cases over time in countries with high connectivity to Wuhan.
 
 Data loading and model run script is in `scripts/main_model.r`. Calls the following files:
 

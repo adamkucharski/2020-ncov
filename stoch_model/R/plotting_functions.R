@@ -14,7 +14,7 @@ plot_outputs <- function(rep_plot,nn){
     output_smc <- smc_model(theta,nn)
     I_plot[,kk] <- output_smc$I_trace
     C_plot[,kk] <- output_smc$C_trace# - c(0,head(output_smc$C_trace,-1)) # case difference
-    R0_plot[,kk] <- output_smc$beta_trace*theta[["beta"]]/theta[["recover"]]
+    R0_plot[,kk] <- output_smc$beta_trace*theta[["beta"]]/(theta[["recover"]]+theta[["incubation"]])
   }
   
   # Calculate quantiles
@@ -28,7 +28,7 @@ plot_outputs <- function(rep_plot,nn){
   a_col <- 0.4 # alpha
   
   # Plot estimated csaes
-  plot(date_range,Inf_quantile[1,],col="white",ylim=c(0,1e6),xlab="",ylab="daily incidence in China")
+  plot(date_range,Inf_quantile[1,],col="white",ylim=c(0,1e6),xlab="",ylab="prevalence in Wuhan")
   polygon(c(date_range,rev(date_range)),c(Inf_quantile[2,],rev(Inf_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(Inf_quantile[1,],rev(Inf_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_range,Inf_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")

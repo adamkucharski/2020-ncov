@@ -1,13 +1,13 @@
 # Timeseries data
 
-# define values
-
+# Define values
 start_date <- as.Date("2019-12-10")
-end_date <- as.Date("2020-01-25")
+end_date <- max(case_data_in$date) # most recent date
 date_range <- seq(start_date,end_date,1)
 
 # load data
-case_data$export_probability <- as.numeric(travel_data[match(case_data$location,travel_data$label),]$risk) # Add risk
+case_data <- case_data_in
+case_data$export_probability <- as.numeric(travel_data[match(case_data$country,travel_data$label),]$risk) # Add risk
 case_data <- case_data[!is.na(case_data$export_probability),] # Only use available data
 
 # tally cases
@@ -25,7 +25,7 @@ case_data <- case_data %>% mutate(time = as.numeric(date - start_date + 1))
 n_risk <- 30
 top_risk <- travel_data[1:n_risk,]
 case_data_matrix <- matrix(0,nrow=t_period,ncol=n_risk)
-match_list_cases <- match(case_data$location,top_risk$label)
+match_list_cases <- match(case_data$country,top_risk$label)
 case_data_matrix[case_data$time,match_list_cases] <- case_data$cases # add detected cases
 
 

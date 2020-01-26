@@ -2,24 +2,31 @@
 
 process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
   
-  # simTab <- storeL[,ii-1,]; t_start = 1; t_end = 2; dt = 1; simzetaA <- simzeta[,1]
+  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 1; simzetaA <- simzeta[,1]
   
-  infections_t <- simTab[,"inf"] # input function
+  exposed_t <- simTab[,"exp"] # input function
+  infectious_t <- simTab[,"inf"] # input function
   cases_t <- simTab[,"cases"] # input function
   reports_t <- simTab[,"reports"] # input function
   
   for(ii in seq((t_start+dt),t_end,dt) ){
     
-    new_I <- infections_t*theta[["beta"]]*simzetaA # growth function
-    I_to_R <- theta[["recover"]]*infections_t
-    I_to_C <- new_I
+    # transitions
+    new_E <- infectious_t*theta[["beta"]]*simzetaA # stochastic transmission
+    E_to_I <- exposed_t*theta[["incubation"]]
+    I_to_R <- theta[["recover"]]*infectious_t
+    I_to_C <- E_to_I
     C_to_Rep <- theta[["report"]]*cases_t
-    infections_t <- infections_t + new_I - I_to_R
+    
+    # process model
+    exposed_t <- exposed_t + new_E - E_to_I
+    infectious_t <- infectious_t + E_to_I - I_to_R
     cases_t <- cases_t + I_to_C
     reports_t <- C_to_Rep
   }
   
-  simTab[,"inf"] <- infections_t # output
+  simTab[,"exp"] <- exposed_t # input function
+  simTab[,"inf"] <- infectious_t # output
   simTab[,"cases"] <- cases_t # output
   simTab[,"reports"] <- reports_t # output
   
@@ -30,6 +37,8 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
 # SMC function --------------------------------------------
 
 smc_model <- function(theta,nn){
+  
+  # nn = 100
   
   # Assumptions - using daily growth rate
   ttotal <- t_period

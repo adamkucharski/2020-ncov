@@ -26,7 +26,7 @@ if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
 
 # Load datasets
 travel_data <- read_csv(paste0(dropbox_path,"data_sources/mobility_data/mobs_connectivity_data.csv"))
-case_data <- read_csv(paste0(dropbox_path,"data_sources/case_data/international_case_data.csv"))
+case_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/international_case_data.csv"))
 
 # Load model and plotting functions
 source("R/model_functions.R")
@@ -45,16 +45,17 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             beta=NA,
             betavol=as.numeric(thetaR_IC[thetaR_IC$param=="betavol","value"]),
             gentime=as.numeric(thetaR_IC[thetaR_IC$param=="gentime","value"]), # not used currently
+            incubation=1/as.numeric(thetaR_IC[thetaR_IC$param=="incubation","value"]),
             report=1/as.numeric(thetaR_IC[thetaR_IC$param=="report","value"]),
             recover=1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
             init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]))
 
-#theta[["r0"]] <- 2.5
+theta[["r0"]] <- 2.5
 #theta[["betavol"]] <- 0.3
 
-theta[["beta"]] <- theta[["r0"]]*theta[["recover"]]
+theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]+theta[["incubation"]])
 
-theta_initNames <- c("inf","cases","reports") # also defines groups to use in model
+theta_initNames <- c("exp","inf","cases","reports") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
@@ -66,7 +67,7 @@ output_smc <- smc_model(theta,
 output_smc$lik
 
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=10, # number of repeats
+plot_outputs(rep_plot=2, # number of repeats
              nn=1e2 # number of particles
              )
 
