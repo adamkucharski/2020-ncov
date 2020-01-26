@@ -18,8 +18,8 @@ plot_outputs <- function(rep_plot,nn){
   }
   
   # Calculate quantiles
-  Inf_quantile <- apply(I_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
-  Case_quantile <- apply(C_plot,1,function(x){quantile(x,c(0.025,0.5,0.975))})
+  Inf_quantile <- apply(I_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})/1e3 # thousands
+  Case_quantile <- apply(C_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
   R0_quantile <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
   
   # Calculate daily incidence
@@ -31,7 +31,7 @@ plot_outputs <- function(rep_plot,nn){
   a_col <- 0.4 # alpha
   
   # Plot estimated csaes
-  plot(date_range,Inf_quantile[1,],col="white",ylim=c(0,1e6),xlab="",ylab="prevalence in Wuhan")
+  plot(date_range,Inf_quantile[1,],col="white",ylim=c(0,1e5),xlab="",ylab="prevalence in Wuhan (thousands)")
   polygon(c(date_range,rev(date_range)),c(Inf_quantile[2,],rev(Inf_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(Inf_quantile[1,],rev(Inf_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_range,Inf_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
@@ -39,13 +39,14 @@ plot_outputs <- function(rep_plot,nn){
   # Plot international cases
   plot(date_range,case_time,pch=19,ylab="international cases",col="white")
   
-  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Case_diff_quantile[1,]),rev(fit_int_cases(Case_diff_quantile[3,]))),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_range,fit_int_cases(Case_diff_quantile[2,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Case_quantile[2,]),rev(fit_int_cases(Case_quantile[4,]))),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Case_quantile[1,]),rev(fit_int_cases(Case_quantile[5,]))),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,fit_int_cases(Case_quantile[3,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
 
   points(date_range,case_time)
   
-  # Plot daily growth rate
-  plot(date_range,R0_quantile[1,],col="white",ylim=c(0,4),xlab="",ylab="reproduction number")
+  # Plot reproduction number
+  plot(date_range,R0_quantile[1,],col="white",ylim=c(0,5),xlab="",ylab="reproduction number")
   
   polygon(c(date_range,rev(date_range)),c(R0_quantile[2,],rev(R0_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(R0_quantile[1,],rev(R0_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))

@@ -4,29 +4,37 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
   
   # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 1; simzetaA <- simzeta[,1]
   
-  exposed_t <- simTab[,"exp"] # input function
-  infectious_t <- simTab[,"inf"] # input function
+  exposed_t1 <- simTab[,"exp1"] # input function
+  exposed_t2 <- simTab[,"exp2"] # input function
+  infectious_t1 <- simTab[,"inf1"] # input function
+  infectious_t2 <- simTab[,"inf2"] # input function
   cases_t <- simTab[,"cases"] # input function
   reports_t <- simTab[,"reports"] # input function
   
   for(ii in seq((t_start+dt),t_end,dt) ){
     
     # transitions
-    new_E <- infectious_t*theta[["beta"]]*simzetaA # stochastic transmission
-    E_to_I <- exposed_t*theta[["incubation"]]
-    I_to_R <- theta[["recover"]]*infectious_t
-    I_to_C <- E_to_I
+    new_E1 <- (infectious_t1+infectious_t2)*theta[["beta"]]*simzetaA # stochastic transmission
+    E1_to_E2 <- exposed_t1*theta[["incubation"]]*2 # as two compartments
+    E2_to_I1 <- exposed_t2*theta[["incubation"]]*2
+    I1_to_I2 <- theta[["recover"]]*infectious_t1*2
+    I2_to_R <- theta[["recover"]]*infectious_t2*2
+    I_to_C <- E2_to_I1
     C_to_Rep <- theta[["report"]]*cases_t
     
     # process model
-    exposed_t <- exposed_t + new_E - E_to_I
-    infectious_t <- infectious_t + E_to_I - I_to_R
+    exposed_t1 <- exposed_t1 + new_E1 - E1_to_E2
+    exposed_t2 <- exposed_t2 + E1_to_E2 - E2_to_I1
+    infectious_t1 <- infectious_t1 + E2_to_I1 - I1_to_I2
+    infectious_t2 <- infectious_t2 + I1_to_I2 - I2_to_R
     cases_t <- cases_t + I_to_C
     reports_t <- C_to_Rep
   }
   
-  simTab[,"exp"] <- exposed_t # input function
-  simTab[,"inf"] <- infectious_t # output
+  simTab[,"exp1"] <- exposed_t1 # output
+  simTab[,"exp2"] <- exposed_t2 # output
+  simTab[,"inf1"] <- infectious_t1 # output
+  simTab[,"inf2"] <- infectious_t2 # output
   simTab[,"cases"] <- cases_t # output
   simTab[,"reports"] <- reports_t # output
   
@@ -47,8 +55,9 @@ smc_model <- function(theta,nn){
   
   storeL <- array(0,dim=c(nn,t_length, length(theta_initNames)),dimnames = list(NULL,NULL,theta_initNames))
   
-  # Initial condition
-  storeL[,1,"inf"] <- theta[["init_cases"]]
+  # Add initial condition
+  storeL[,1,"inf1"] <- theta[["init_cases"]]
+  storeL[,1,"inf2"] <- theta[["init_cases"]]
   simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
   
   # PARTICLE FILTER GOES HERE
@@ -106,13 +115,13 @@ smc_model <- function(theta,nn){
   locs <-  sample(1:nn,prob = W[1:nn,tt],replace = T)
   l_sample[ttotal] <- locs[1]
   C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
-  I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf"]
+  I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf1"]+storeL[l_sample[ttotal],ttotal,"inf2"]
   beta_traj[ttotal,] <- simzeta[l_sample[ttotal],ttotal]
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
     C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
-    I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf"]
+    I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
     beta_traj[ii-1,] <- simzeta[l_sample[ii-1],ii-1]
   }
  

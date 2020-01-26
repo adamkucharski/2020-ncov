@@ -2,7 +2,7 @@
 
 # Define values
 start_date <- as.Date("2019-12-10")
-end_date <- max(case_data_in$date) # most recent date
+end_date <- max(case_data_in$date)-1 # most recent date (remove one day)
 date_range <- seq(start_date,end_date,1)
 
 # load data
@@ -24,11 +24,12 @@ case_data <- case_data %>% mutate(time = as.numeric(date - start_date + 1))
 # compile matrix of cases in top 30 risk locations
 n_risk <- 30
 top_risk <- travel_data[1:n_risk,]
-case_data_matrix <- matrix(0,nrow=t_period,ncol=n_risk)
-match_list_cases <- match(case_data$country,top_risk$label)
+
 
 # THIS IS DEPRECATED - NOW USING SINGLE TIMESERIES
-case_data_matrix[case_data$time,match_list_cases] <- case_data$cases # add detected cases
+#case_data_matrix <- matrix(0,nrow=t_period,ncol=n_risk)
+#match_list_cases <- match(case_data$country,top_risk$label)
+#case_data_matrix[case_data$time,match_list_cases] <- case_data$cases # add detected cases
 
 
 

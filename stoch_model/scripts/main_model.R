@@ -45,17 +45,17 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             beta=NA,
             betavol=as.numeric(thetaR_IC[thetaR_IC$param=="betavol","value"]),
             gentime=as.numeric(thetaR_IC[thetaR_IC$param=="gentime","value"]), # not used currently
-            incubation=1/as.numeric(thetaR_IC[thetaR_IC$param=="incubation","value"]),
-            report=1/as.numeric(thetaR_IC[thetaR_IC$param=="report","value"]),
-            recover=1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
-            init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]))
+            incubation = 1/as.numeric(thetaR_IC[thetaR_IC$param=="incubation","value"]),
+            report = 1/as.numeric(thetaR_IC[thetaR_IC$param=="report","value"]),
+            recover = 1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
+            init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]/2))
 
-theta[["r0"]] <- 3
-theta[["betavol"]] <- 1
+theta[["r0"]] <- 2
+theta[["betavol"]] <- 0.5
 
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]+theta[["incubation"]])
 
-theta_initNames <- c("exp","inf","cases","reports") # also defines groups to use in model
+theta_initNames <- c("exp1","exp2","inf1","inf2","cases","reports") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
@@ -68,7 +68,7 @@ output_smc$lik
 
 # Run multiple SMC and output plots
 plot_outputs(rep_plot=100, # number of repeats
-             nn=1e2 # number of particles
+             nn=1e3 # number of particles
              )
 
 
