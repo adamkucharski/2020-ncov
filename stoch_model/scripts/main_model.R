@@ -32,10 +32,6 @@ case_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/internation
 source("R/model_functions.R")
 source("R/plotting_functions.R")
 
-# Define time period and global transport paramters
-passengers_daily <- 3300
-wuhan_area <- 19e6
-
 # Load timeseries
 source("R/load_timeseries_data.R",local=TRUE)
 
@@ -48,14 +44,20 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             incubation = 1/as.numeric(thetaR_IC[thetaR_IC$param=="incubation","value"]),
             report = 1/as.numeric(thetaR_IC[thetaR_IC$param=="report","value"]),
             recover = 1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
-            init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]/2))
+            init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]/2),
+            passengers=as.numeric(thetaR_IC[thetaR_IC$param=="outbound_travel","value"]/2),
+            pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]/2),
+            travel_frac=NA
+            )
+
+theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]]
 
 # Pick ICs for random walk
-theta[["r0"]] <- 3
-theta[["betavol"]] <- 0.01
+theta[["r0"]] <- 2
+theta[["betavol"]] <- 0.3
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]])
 
-theta_initNames <- c("exp1","exp2","inf1","inf2","cases","reports") # also defines groups to use in model
+theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","cases","reports") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
@@ -67,8 +69,8 @@ output_smc <- smc_model(theta,
 output_smc$lik
 
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=200, # number of repeats
-             nn=2e3, # number of particles
-             cut_off = 0 # omit final X days for R calculations?
+plot_outputs(rep_plot=10, # number of repeats
+             nn=1e2, #number of particles
+             cut_off = as.numeric(end_date - wuhan_travel_restrictions) # omit final X days for R calculations?
              )
 

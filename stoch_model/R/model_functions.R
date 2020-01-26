@@ -1,44 +1,59 @@
 # Process model for simulation --------------------------------------------
 
-process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
+process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   
-  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 0.5; simzetaA <- simzeta[1,]
+  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 0.1; simzetaA <- simzeta[1,]
   
+  susceptible_t <- simTab[,"sus"] # input function
   exposed_t1 <- simTab[,"exp1"] # input function
   exposed_t2 <- simTab[,"exp2"] # input function
+  tr_exposed_t1 <- simTab[,"tr_exp1"] # input function
+  tr_exposed_t2 <- simTab[,"tr_exp2"] # input function
+  
   infectious_t1 <- simTab[,"inf1"] # input function
   infectious_t2 <- simTab[,"inf2"] # input function
   cases_t <- simTab[,"cases"] # input function
   reports_t <- simTab[,"reports"] # input function
   
   # scale transitions
-  inf_rate <- simzetaA*dt
+  inf_rate <- (simzetaA/theta[["pop_travel"]])*dt
   inc_rate <- theta[["incubation"]]*2*dt
   rec_rate <- theta[["recover"]]*2*dt
   rep_rate <- theta[["report"]]*dt
+  travel_frac <- travelF
   
   for(ii in seq((t_start+dt),t_end,dt) ){
     
     # transitions
-    new_E1 <- (infectious_t1+infectious_t2) # stochastic transmission
+    S_to_E1 <- susceptible_t*(infectious_t1+infectious_t2)*inf_rate # stochastic transmission
     E1_to_E2 <- exposed_t1*inc_rate # as two compartments
     E2_to_I1 <- exposed_t2*inc_rate
+    E1_to_E2_tr <- tr_exposed_t1*inc_rate # as two compartments
+    E2_to_I1_tr <- tr_exposed_t2*inc_rate
+    
     I1_to_I2 <- infectious_t1*rec_rate
     I2_to_R <- infectious_t2*rec_rate
-    I_to_C <- E2_to_I1
+    tr_E2_to_C <- E2_to_I1_tr
     C_to_Rep <- rep_rate*cases_t
     
     # process model
-    exposed_t1 <- exposed_t1 + new_E1 - E1_to_E2
+    susceptible_t <- susceptible_t - S_to_E1
+    exposed_t1 <- exposed_t1 + S_to_E1*(1-travel_frac) - E1_to_E2
     exposed_t2 <- exposed_t2 + E1_to_E2 - E2_to_I1
+    tr_exposed_t1 <- tr_exposed_t1 + S_to_E1*travel_frac - E1_to_E2_tr
+    tr_exposed_t2 <- tr_exposed_t2 + E1_to_E2_tr - E2_to_I1_tr
+    
     infectious_t1 <- infectious_t1 + E2_to_I1 - I1_to_I2
     infectious_t2 <- infectious_t2 + I1_to_I2 - I2_to_R
-    cases_t <- cases_t + I_to_C
+    cases_t <- cases_t + tr_E2_to_C
     reports_t <- C_to_Rep
   }
   
+  simTab[,"sus"] <- susceptible_t # output
   simTab[,"exp1"] <- exposed_t1 # output
   simTab[,"exp2"] <- exposed_t2 # output
+  simTab[,"tr_exp1"] <- tr_exposed_t1 # output
+  simTab[,"tr_exp2"] <- tr_exposed_t2 # output
   simTab[,"inf1"] <- infectious_t1 # output
   simTab[,"inf2"] <- infectious_t2 # output
   simTab[,"cases"] <- cases_t # output
@@ -50,13 +65,12 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
 
 # SMC function --------------------------------------------
 
-smc_model <- function(theta,nn){
+smc_model <- function(theta,nn,dt=0.25){
   
-  # nn = 100
+  # nn = 100;   dt <- 1
   
   # Assumptions - using daily growth rate
   ttotal <- t_period
-  dt <- 1
   t_length <- ttotal
   
   storeL <- array(0,dim=c(nn,t_length, length(theta_initNames)),dimnames = list(NULL,NULL,theta_initNames))
@@ -66,6 +80,7 @@ smc_model <- function(theta,nn){
   storeL[,1,"exp2"] <- theta[["init_cases"]]
   storeL[,1,"inf1"] <- theta[["init_cases"]]
   storeL[,1,"inf2"] <- theta[["init_cases"]]
+  storeL[,1,"sus"] <- theta[["pop_travel"]] - 4*theta[["init_cases"]]
   
   #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
   simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
@@ -92,8 +107,11 @@ smc_model <- function(theta,nn){
     # Add random walk on transmission ?
     simzeta[tt,] <- simzeta[tt-1,]*exp(simzeta[tt,])
     
+    # travel restrictions in place?
+    if(tt<wuhan_travel_time){travelF <- theta[["travel_frac"]]}else{travelF <- 0}
+    
     # run process model
-    storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[tt,])
+    storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[tt,],travelF)
     
     # calculate weights
     caseDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
@@ -164,7 +182,7 @@ AssignWeights <- function(x_val,case_data_tt,nn){
   # y_lam <- rep(case_data,nn); #dim(y_lam) <- NULL
   
   # Do for single international timeseries - probably more robust now
-  x_scaled <- x_val * passengers_daily / wuhan_area
+  x_scaled <- x_val #* passengers_daily / wuhan_area
   
   x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
   

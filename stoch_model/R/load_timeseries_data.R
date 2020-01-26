@@ -6,7 +6,9 @@ start_date <- as.Date("2019-12-10")
 end_date <- max(case_data_in$date) - omit_recent # omit recent day?
 date_range <- seq(start_date,end_date,1)
 
+# When restrictions started
 wuhan_travel_restrictions <- as.Date("2020-01-23")
+wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
 # load data
 case_data <- case_data_in
