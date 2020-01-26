@@ -58,11 +58,13 @@ smc_model <- function(theta,nn){
   # Add initial condition
   storeL[,1,"inf1"] <- theta[["init_cases"]]
   storeL[,1,"inf2"] <- theta[["init_cases"]]
-  simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
+  #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
+  simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
+  simzeta[1,] <- theta[["beta"]]*exp(simzeta[1,]) # ensure positive
   
   # PARTICLE FILTER GOES HERE
   # Latent variables
-  C_traj = matrix(NA,ncol=1,nrow=ttotal)
+  Rep_traj = matrix(NA,ncol=1,nrow=ttotal)
   I_traj = matrix(NA,ncol=1,nrow=ttotal)
   beta_traj = matrix(NA,ncol=1,nrow=ttotal);
   w <- matrix(NA,nrow=nn,ncol=ttotal); w[,1] <- 1  # weights
@@ -71,18 +73,20 @@ smc_model <- function(theta,nn){
   l_sample <- rep(NA,ttotal)
   lik_values <- rep(NA,ttotal)
 
+
+  
   # Iterate through steps
   
   for(tt in 2:ttotal){
     
     # Add random walk on transmission ?
-    simzeta[tt,] <- simzeta[tt-1,]*simzeta[tt,]
+    simzeta[tt,] <- simzeta[tt-1,]*exp(simzeta[tt,])
     
     # run process model
-    storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[,tt-1])
+    storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[tt,])
     
     # calculate weights
-    caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
+    caseDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
     w[,tt] <- AssignWeights(caseDiff,case_time[tt],nn) 
     
     # normalise particle weights
@@ -99,7 +103,7 @@ smc_model <- function(theta,nn){
     
     # Resample particles for corresponding variables
     storeL[,tt,] <- storeL[ A[, tt] ,tt,]
-    simzeta[,tt] <- simzeta[ A[, tt] ,tt] #- needed for random walk on beta
+    simzeta[tt,] <- simzeta[tt, A[, tt]] #- needed for random walk on beta
     
 
   } # END PARTICLE LOOP
@@ -114,19 +118,19 @@ smc_model <- function(theta,nn){
   # Sample latent variables:
   locs <-  sample(1:nn,prob = W[1:nn,tt],replace = T)
   l_sample[ttotal] <- locs[1]
-  C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
+  Rep_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports"]
   I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf1"]+storeL[l_sample[ttotal],ttotal,"inf2"]
-  beta_traj[ttotal,] <- simzeta[l_sample[ttotal],ttotal]
+  beta_traj[ttotal,] <- simzeta[ttotal,l_sample[ttotal]]
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
-    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
+    Rep_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports"]
     I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
-    beta_traj[ii-1,] <- simzeta[l_sample[ii-1],ii-1]
+    beta_traj[ii-1,] <- simzeta[ii-1,l_sample[ii-1]]
   }
  
 
-  return(list(C_trace=C_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+  return(list(Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
   
   
 }
@@ -138,7 +142,7 @@ AssignWeights <- function(x_val,case_data_tt,nn){
   
   # case_data_tt <- case_time[ttotal]; x_val <- caseDiff
   
-  # x_val <- C_traj - c(0,head(C_traj,-1))
+  # x_val <- Rep_traj - c(0,head(Rep_traj,-1))
   
   # Do location by location
   # x_scaled <- x_val * passengers_daily / wuhan_area
@@ -186,7 +190,7 @@ likelihood_calc <- function(x_val,case_data_matrix){
 }
 
 
-# Simple simulation function calc --------------------------------------------
+# Simple simulation function calc (DEPRECATED) --------------------------------------------
 
 simple_sim <- function(){
   
