@@ -26,6 +26,8 @@ n_risk <- 30
 top_risk <- travel_data[1:n_risk,]
 case_data_matrix <- matrix(0,nrow=t_period,ncol=n_risk)
 match_list_cases <- match(case_data$country,top_risk$label)
+
+# THIS IS DEPRECATED - NOW USING SINGLE TIMESERIES
 case_data_matrix[case_data$time,match_list_cases] <- case_data$cases # add detected cases
 
 

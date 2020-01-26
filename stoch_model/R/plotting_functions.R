@@ -13,7 +13,7 @@ plot_outputs <- function(rep_plot,nn){
   for(kk in 1:rep_plot){
     output_smc <- smc_model(theta,nn)
     I_plot[,kk] <- output_smc$I_trace
-    C_plot[,kk] <- output_smc$C_trace# - c(0,head(output_smc$C_trace,-1)) # case difference
+    C_plot[,kk] <- output_smc$C_trace - c(0,head(output_smc$C_trace,-1)) # case difference
     R0_plot[,kk] <- output_smc$beta_trace*theta[["beta"]]/(theta[["recover"]]+theta[["incubation"]])
   }
   
@@ -23,7 +23,7 @@ plot_outputs <- function(rep_plot,nn){
   R0_quantile <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
   
   # Calculate daily incidence
-  Case_diff_quantile <- Case_quantile[,1:ncol(Case_quantile)] - cbind(c(0,0,0),Case_quantile[,1:(ncol(Case_quantile)-1)])
+  #Case_diff_quantile <- Case_quantile[,1:ncol(Case_quantile)] - cbind(c(0,0,0),Case_quantile[,1:(ncol(Case_quantile)-1)])
   
   par(mfrow=c(3,1),mar=c(2,3,1,1),mgp=c(2,0.7,0))
   

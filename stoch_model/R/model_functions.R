@@ -74,7 +74,7 @@ smc_model <- function(theta,nn){
     
     # calculate weights
     caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
-    w[,tt] <- AssignWeights(caseDiff,case_data_matrix[tt,],nn) 
+    w[,tt] <- AssignWeights(caseDiff,case_time[tt],nn) 
     
     # normalise particle weights
     sum_weights <- sum(w[1:nn,tt])
@@ -103,10 +103,7 @@ smc_model <- function(theta,nn){
   likelihood0 = -ttotal*log(nn)+ sum(lik_values) # log-likelihoods
   
   # Sample latent variables:
-  rand_vals <- runif(1,0,1)
-  cumsum_W <- cumsum(W[1:nn,ttotal])
-  pickA <- c(1:length(cumsum_W))
-  locs <- pickA[cumsum_W >= rand_vals]
+  locs <-  sample(1:nn,prob = W[1:nn,tt],replace = T)
   l_sample[ttotal] <- locs[1]
   C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
   I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf"]
@@ -114,9 +111,9 @@ smc_model <- function(theta,nn){
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
-    C_traj[ii-1,] <- storeL[l_sample[ii],ii-1,"cases"]
-    I_traj[ii-1,] <- storeL[l_sample[ii],ii-1,"inf"]
-    beta_traj[ii-1,] <- simzeta[l_sample[ii],ii-1]
+    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
+    I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf"]
+    beta_traj[ii-1,] <- simzeta[l_sample[ii-1],ii-1]
   }
  
 
@@ -128,20 +125,26 @@ smc_model <- function(theta,nn){
 
 # Likelihood calc for SMC --------------------------------------------
 
-AssignWeights <- function(x_val,case_data,nn){
+AssignWeights <- function(x_val,case_data_tt,nn){
   
-  # case_data <- case_data_matrix[ttotal,]; x_val <- caseDiff
+  # case_data_tt <- case_time[ttotal]; x_val <- caseDiff
   
-  # Scale for air travel
+  # x_val <- C_traj - c(0,head(C_traj,-1))
+  
+  # Do location by location
+  # x_scaled <- x_val * passengers_daily / wuhan_area
+  # x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
+  # # Note here rows are particles, cols are locations.
+  # x_lam <- x_expected; dim(x_lam) <- NULL # flatten data on expectation
+  # y_lam <- rep(case_data,nn); #dim(y_lam) <- NULL
+  
+  # Do for single international timeseries - probably more robust now
   x_scaled <- x_val * passengers_daily / wuhan_area
   
   x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
   
-  #x_expected <- x_scaled[case_data$time]*case_data$export_probability # extract x values for observed data
-  
-  # Note here rows are particles, cols are locations.
-  x_lam <- x_expected; dim(x_lam) <- NULL # flatten data on expectation
-  y_lam <- rep(case_data,nn); #dim(y_lam) <- NULL
+  x_lam <- rowSums(x_expected)
+  y_lam <- case_data_tt #sum(case_data)
   
   # Calculation likelihood
   loglik <- dpois(y_lam,lambda=x_lam,log=T)

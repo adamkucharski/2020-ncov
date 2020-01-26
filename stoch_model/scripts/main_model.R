@@ -50,8 +50,8 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             recover=1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
             init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]))
 
-theta[["r0"]] <- 2.5
-theta[["betavol"]] <- 0.3
+theta[["r0"]] <- 3
+theta[["betavol"]] <- 1
 
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]+theta[["incubation"]])
 
