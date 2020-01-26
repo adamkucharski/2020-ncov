@@ -2,10 +2,10 @@
 
 plot_outputs <- function(rep_plot,nn){
   
+  # rep_plot <- 10; nn <- 100
+  
   # Get median and 95%
-  
-  rep_plot <- 100 # how many SMC samples
-  
+
   I_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   R0_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
@@ -22,6 +22,9 @@ plot_outputs <- function(rep_plot,nn){
   Case_quantile <- apply(C_plot,1,function(x){quantile(x,c(0.025,0.5,0.975))})
   R0_quantile <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
   
+  # Calculate daily incidence
+  Case_diff_quantile <- Case_quantile[,1:ncol(Case_quantile)] - cbind(c(0,0,0),Case_quantile[,1:(ncol(Case_quantile)-1)])
+  
   par(mfrow=c(3,1),mar=c(2,3,1,1),mgp=c(2,0.7,0))
   
   # Plot outputs
@@ -34,7 +37,12 @@ plot_outputs <- function(rep_plot,nn){
   lines(date_range,Inf_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   
   # Plot international cases
-  plot(date_range,case_time,pch=19,ylab="international cases")
+  plot(date_range,case_time,pch=19,ylab="international cases",col="white")
+  
+  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Case_diff_quantile[1,]),rev(fit_int_cases(Case_diff_quantile[3,]))),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,fit_int_cases(Case_diff_quantile[2,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+
+  points(date_range,case_time)
   
   # Plot daily growth rate
   plot(date_range,R0_quantile[1,],col="white",ylim=c(0,4),xlab="",ylab="reproduction number")
@@ -47,5 +55,17 @@ plot_outputs <- function(rep_plot,nn){
   dev.copy(png,paste("plots/case_inference.png",sep=""),units="cm",width=10,height=15,res=150)
   dev.off()
   
+  
+}
+
+# Plot outputs from SMC --------------------------------------------
+
+fit_int_cases <- function(x_val){
+  
+  x_scaled <- x_val * passengers_daily / wuhan_area
+  
+  x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
+  
+  rowSums(x_expected)
   
 }

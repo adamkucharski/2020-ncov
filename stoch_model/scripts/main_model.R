@@ -51,7 +51,7 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"]))
 
 theta[["r0"]] <- 2.5
-#theta[["betavol"]] <- 0.3
+theta[["betavol"]] <- 0.3
 
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]+theta[["incubation"]])
 
@@ -62,12 +62,12 @@ theta_initNames <- c("exp","inf","cases","reports") # also defines groups to use
 
 # Run SMC and output likelihood
 output_smc <- smc_model(theta,
-                        nn=1e2 # number of particles
+                        nn=1e3 # number of particles
                         )
 output_smc$lik
 
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=2, # number of repeats
+plot_outputs(rep_plot=100, # number of repeats
              nn=1e2 # number of particles
              )
 

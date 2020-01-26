@@ -58,7 +58,7 @@ smc_model <- function(theta,nn){
   beta_traj = matrix(NA,ncol=1,nrow=ttotal);
   w <- matrix(NA,nrow=nn,ncol=ttotal); w[,1] <- 1  # weights
   W <- matrix(NA,nrow=nn,ncol=ttotal)
-  A <- matrix(NA,nrow=nn,ncol=ttotal)
+  A <- matrix(NA,nrow=nn,ncol=ttotal) # particle parent matrix
   l_sample <- rep(NA,ttotal)
   lik_values <- rep(NA,ttotal)
 
@@ -67,7 +67,7 @@ smc_model <- function(theta,nn){
   for(tt in 2:ttotal){
     
     # Add random walk on transmission ?
-    #simzeta[tt,] <- simzeta[tt-1,]*simzeta[tt,]
+    simzeta[tt,] <- simzeta[tt-1,]*simzeta[tt,]
     
     # run process model
     storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[,tt-1])
@@ -81,18 +81,16 @@ smc_model <- function(theta,nn){
     W[1:nn,tt] <- w[1:nn,tt]/sum_weights
     
     # resample particles by sampling parent particles according to weights:
-    rand_vals <- runif(nn,0,1)
-    cumsum_W <- cumsum(W[1:nn,tt])
-    pickA <- c(1:length(cumsum_W))
+    A[, tt] <- sample(1:nn,prob = W[1:nn,tt],replace = T)
     
-    for (j in 1:nn){
-      locs <- pickA[cumsum_W >= rand_vals[j]]
-      A[j, tt] <- locs[1]
-    }
+    # DEPRECATED
+    # for (j in 1:nn){
+    #   locs <- pickA[cumsum_W >= rand_vals[j]]; A[j, tt] <- locs[1]
+    # }
     
     # Resample particles for corresponding variables
     storeL[,tt,] <- storeL[ A[, tt] ,tt,]
-    #simzeta[,tt] <- simzeta[ A[, tt] ,tt] #- random walk on beta?
+    simzeta[,tt] <- simzeta[ A[, tt] ,tt] #- needed for random walk on beta
     
 
   } # END PARTICLE LOOP
@@ -116,9 +114,9 @@ smc_model <- function(theta,nn){
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
-    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
-    I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf"]
-    beta_traj[ii-1,] <- simzeta[l_sample[ii-1],ii-1]
+    C_traj[ii-1,] <- storeL[l_sample[ii],ii-1,"cases"]
+    I_traj[ii-1,] <- storeL[l_sample[ii],ii-1,"inf"]
+    beta_traj[ii-1,] <- simzeta[l_sample[ii],ii-1]
   }
  
 
