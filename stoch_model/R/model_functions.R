@@ -2,7 +2,7 @@
 
 process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
   
-  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 1; simzetaA <- simzeta[,1]
+  # simTab <- storeL[,tt-1,]; t_start = 1; t_end = 2; dt = 0.5; simzetaA <- simzeta[1,]
   
   exposed_t1 <- simTab[,"exp1"] # input function
   exposed_t2 <- simTab[,"exp2"] # input function
@@ -11,16 +11,22 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA){
   cases_t <- simTab[,"cases"] # input function
   reports_t <- simTab[,"reports"] # input function
   
+  # scale transitions
+  inf_rate <- simzetaA*dt
+  inc_rate <- theta[["incubation"]]*2*dt
+  rec_rate <- theta[["recover"]]*2*dt
+  rep_rate <- theta[["report"]]*dt
+  
   for(ii in seq((t_start+dt),t_end,dt) ){
     
     # transitions
-    new_E1 <- (infectious_t1+infectious_t2)*simzetaA # stochastic transmission
-    E1_to_E2 <- exposed_t1*theta[["incubation"]]*2 # as two compartments
-    E2_to_I1 <- exposed_t2*theta[["incubation"]]*2
-    I1_to_I2 <- infectious_t1*theta[["recover"]]*2
-    I2_to_R <- infectious_t2*theta[["recover"]]*2
+    new_E1 <- (infectious_t1+infectious_t2) # stochastic transmission
+    E1_to_E2 <- exposed_t1*inc_rate # as two compartments
+    E2_to_I1 <- exposed_t2*inc_rate
+    I1_to_I2 <- infectious_t1*rec_rate
+    I2_to_R <- infectious_t2*rec_rate
     I_to_C <- E2_to_I1
-    C_to_Rep <- theta[["report"]]*cases_t
+    C_to_Rep <- rep_rate*cases_t
     
     # process model
     exposed_t1 <- exposed_t1 + new_E1 - E1_to_E2
@@ -51,13 +57,16 @@ smc_model <- function(theta,nn){
   # Assumptions - using daily growth rate
   ttotal <- t_period
   dt <- 1
-  t_length <- ttotal/dt
+  t_length <- ttotal
   
   storeL <- array(0,dim=c(nn,t_length, length(theta_initNames)),dimnames = list(NULL,NULL,theta_initNames))
   
   # Add initial condition
+  storeL[,1,"exp1"] <- theta[["init_cases"]]
+  storeL[,1,"exp2"] <- theta[["init_cases"]]
   storeL[,1,"inf1"] <- theta[["init_cases"]]
   storeL[,1,"inf2"] <- theta[["init_cases"]]
+  
   #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
   simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
   simzeta[1,] <- exp(simzeta[1,])*theta[["beta"]] # define IC

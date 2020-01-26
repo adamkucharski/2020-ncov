@@ -40,9 +40,10 @@ plot_outputs <- function(rep_plot,nn,cut_off){
   a_col <- 0.4 # alpha
   xMin <- min(date_range)
   xMax <- max(date_range)
+  yMax <- max(Inf_quantile[4,])
 
   # Plot estimated infections
-  plot(date_range,Inf_quantile[1,],col="white",ylim=c(0,1e3),xlim=c(xMin,xMax),xlab="",ylab="cases in Wuhan (thousands)")
+  plot(date_range,Inf_quantile[1,],col="white",ylim=c(0,yMax),xlim=c(xMin,xMax),xlab="",ylab="cases in Wuhan (thousands)")
   polygon(c(date_range,rev(date_range)),c(Inf_quantile[2,],rev(Inf_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(Inf_quantile[1,],rev(Inf_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_range,Inf_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
