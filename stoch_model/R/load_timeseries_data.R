@@ -1,16 +1,20 @@
 # Timeseries data
 
+
+
 # Define values
-omit_recent <- 0
-start_date <- as.Date("2019-12-10")
-end_date <- max(case_data_in$date) - omit_recent # omit recent day?
+omit_recent <- 3
+start_date <- as.Date("2019-11-15")
+end_date <- max(case_data_in$date) # omit recent day?
 date_range <- seq(start_date,end_date,1)
 
 # When restrictions started
 wuhan_travel_restrictions <- as.Date("2020-01-23")
 wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
-# load data
+
+# Load international confirmation data --------------------------------------------
+
 case_data <- case_data_in
 case_data$export_probability <- as.numeric(travel_data[match(case_data$country,travel_data$label),]$risk) # Add risk
 case_data <- case_data[!is.na(case_data$export_probability),] # Only use available data
@@ -19,7 +23,7 @@ case_data <- case_data[!is.na(case_data$export_probability),] # Only use availab
 case_time <- rep(0,length(date_range))
 
 for(ii in 1:length(date_range)){
-  case_time[ii] = sum(case_data[case_data$date==date_range[ii],]$cases)
+  case_time[ii] = sum(case_data[case_data$date==date_range[ii],]$number)
 }
 
 # shift data into weeks
@@ -30,11 +34,63 @@ case_data <- case_data %>% mutate(time = as.numeric(date - start_date + 1))
 n_risk <- 30
 top_risk <- travel_data[1:n_risk,]
 
+# Calculate exports by country
+case_data_matrix <- matrix(0,nrow=t_period,ncol=n_risk)
+match_list_cases <- match(case_data$country,top_risk$label)
+for(ii in 1:nrow(case_data)){
+  case_data_matrix[case_data[ii,]$time,match_list_cases[ii]] <- case_data[ii,]$number # add detected cases
+}
 
-# THIS IS DEPRECATED - NOW USING SINGLE TIMESERIES
-#case_data_matrix <- matrix(0,nrow=t_period,ncol=n_risk)
-#match_list_cases <- match(case_data$country,top_risk$label)
-#case_data_matrix[case_data$time,match_list_cases] <- case_data$cases # add detected cases
+# Load international onset data --------------------------------------------
+
+case_data_onset <- international_onset_data_in
+cutoff_time_int_onsets <- max(case_data_onset$date) - omit_recent # omit final days of time points
+
+case_data_onset[case_data_onset$date>cutoff_time_int_onsets,"number"] <- NA
+case_data_onset_time <- rep(0,length(date_range))
+
+for(ii in 1:length(date_range)){
+  if(date_range[ii]<=cutoff_time_int_onsets){
+    case_data_onset_time[ii] <- sum(case_data_onset[case_data_onset$date==date_range[ii],]$number)
+  }else{
+    case_data_onset_time[ii] <- NA
+  }
+}
+
+
+# Load China onset data --------------------------------------------
+
+case_data_china <- china_onset_data_in
+cutoff_time_china <- max(case_data_china$date) - omit_recent # omit final days of time points
+case_data_china[case_data_china$date>cutoff_time_china,"number"] <- NA
+case_data_china_time <- rep(0,length(date_range))
+
+# ensure final points are omitted
+for(ii in 1:length(date_range)){
+  if(date_range[ii]<=cutoff_time_china){
+    case_data_china_time[ii] <- sum(case_data_china[case_data_china$date==date_range[ii],]$number)
+  }else{
+    case_data_china_time[ii] <- NA
+  }
+}
+
+# Load Wuhan early data --------------------------------------------
+
+case_data_wuhan <- wuhan_onset_data_in
+case_data_wuhan$number <- case_data_wuhan$number - case_data_wuhan$number_market # calculate non-market exposures
+
+case_data_wuhan_time <- rep(0,length(date_range))
+
+for(ii in 1:length(date_range)){
+  case_data_wuhan_time[ii] = sum(case_data_wuhan[case_data_wuhan$date==date_range[ii],]$number)
+}
+
+# Quick plot
+#plot(case_data_wuhan$date,case_data_wuhan$number,xlim=as.Date(c("2019-12-01","2020-01-25")),ylim=c(0,30)); points(case_data_china$date,case_data_china$number,col="blue")
+
+# INITIAL APPROXIMATION -  ADD TOGETHER CHINA TIMESERIES
+
+case_data_china_time <- case_data_china_time + case_data_wuhan_time
 
 
 

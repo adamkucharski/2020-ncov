@@ -16,6 +16,7 @@ registerDoMC(4)  #change the 2 to your number of CPU cores
 
 rm(list=ls(all=TRUE))
 
+# - - -
 # Set user-specific directory path and load datasets
 if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
   setwd("~/Documents/GitHub/2020-nCov/stoch_model/")
@@ -24,17 +25,27 @@ if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
 
 # Load datasets, functions and parameters ----------------------------------------------
 
+# - - -
 # Load datasets
-travel_data <- read_csv(paste0(dropbox_path,"data_sources/mobility_data/mobs_connectivity_data.csv"))
-case_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/international_case_data.csv"))
+travel_data_mobs <- read_csv(paste0(dropbox_path,"data_sources/mobility_data/mobs_connectivity_data.csv"))
+international_conf_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/international_case_data.csv"))
+international_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_WHO_report.csv"))
+china_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_data_bioRvix_Liu_et_al.csv"))
+wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_data_lancet_huang_et_al.csv"))
 
+# - - -
 # Load model and plotting functions
 source("R/model_functions.R")
 source("R/plotting_functions.R")
 
-# Load timeseries
+# - - -
+# Load timeseries -  specify travel data being used
+case_data_in <- international_conf_data_in
+travel_data <- travel_data_mobs
+
 source("R/load_timeseries_data.R",local=TRUE)
 
+# - - -
 # Load model parameters
 thetaR_IC <- read_csv("inputs/theta_initial_conditions.csv")
 theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
@@ -47,30 +58,34 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
             init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"])/2,
             passengers=as.numeric(thetaR_IC[thetaR_IC$param=="outbound_travel","value"]),
             pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]),
+            local_rep_prop=1/as.numeric(thetaR_IC[thetaR_IC$param=="local_rep_prop","value"]), # local propn reported
             travel_frac=NA
             )
 
 theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]]
 
+# - - -
 # Pick ICs for random walk
-theta[["r0"]] <- 2
+theta[["r0"]] <- 3
 theta[["betavol"]] <- 0.3
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]])
 
-theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","cases","reports") # also defines groups to use in model
+theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","cases","reports","cases_local") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
 
+# - - -
 # Run SMC and output likelihooda
 output_smc <- smc_model(theta,
                         nn=1e3 # number of particles
                         )
 output_smc$lik
 
+# - - -
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=50, # number of repeats
-             nn=500, #number of particles
-             cut_off = max(0,as.numeric(end_date - wuhan_travel_restrictions)) # omit final X days for R calculations?
+plot_outputs(rep_plot=100, # number of repeats
+             nn=1e3, #number of particles
+             cut_off = 0 #max(0,as.numeric(end_date - wuhan_travel_restrictions)) # omit final X days for R calculations?
              )
 
