@@ -75,7 +75,7 @@ theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","case
 # Run models --------------------------------------------------------------
 
 # - - -
-# Run SMC and output likelihooda
+# Run SMC and check likelihood
 output_smc <- smc_model(theta,
                         nn=1e2, # number of particles
                         dt=0.25

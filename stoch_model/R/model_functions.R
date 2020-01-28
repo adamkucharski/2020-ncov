@@ -344,7 +344,7 @@ MLE_check <- function(){
     
   for(ii in 1:length(theta_tab)){
     
-    theta[["beta_vol"]] <- 1/theta_tab[ii]
+    theta[["beta"]] <- theta_tab[ii]
     
     # Run SMC and output likelihooda
     output_smc <- smc_model(theta,
