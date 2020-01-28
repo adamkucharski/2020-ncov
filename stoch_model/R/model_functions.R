@@ -358,6 +358,12 @@ MLE_check <- function(){
   
 }
 
+numerical_solver <- function(r0, k)
+{
 
+  fun <- function (s) (1 + (r0/k)*(1 - s))^(-k) - s
+  uni <- rootSolve::multiroot(fun, c(0, 1))$root
+  return(uni)
 
+}
 
