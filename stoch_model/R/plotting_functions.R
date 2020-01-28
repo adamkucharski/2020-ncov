@@ -26,6 +26,16 @@ plot_outputs <- function(rep_plot,nn,cut_off){
     R0_plot[,kk] <- (S_plot[,kk]/theta[["pop_travel"]])*output_smc$beta_trace/(theta[["recover"]])
   }
   
+  save(
+    S_plot,
+    I_plot,
+    C_local_plot,
+    Rep_local_plot,
+    C_plot,
+    Rep_plot,
+    R0_plot,
+  file=paste0("outputs/bootstrap_fit.RData")) 
+  
   # Calculate quantiles
   S_quantile <- apply(S_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) # thousands
   Inf_quantile <- apply(I_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})/1e3 # thousands
