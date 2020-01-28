@@ -20,19 +20,19 @@ rm(list=ls(all=TRUE))
 # Set user-specific directory path and load datasets
 if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
   setwd("~/Documents/GitHub/2020-nCov/stoch_model/")
-  dropbox_path <- "~/Dropbox/Shared_nCov2019/"
+  dropbox_path <- ""
 }
 
 # Load datasets, functions and parameters ----------------------------------------------
 
 # - - -
 # Load datasets
-travel_data_mobs <- read_csv(paste0(dropbox_path,"data_sources/mobility_data/mobs_connectivity_data.csv"))
-international_conf_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/international_case_data.csv"))
-international_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_WHO_report.csv"))
-china_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_data_bioRvix_Liu_et_al.csv"))
-wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_data_lancet_huang_et_al.csv"))
-wuhan_conf_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_HKU_Wuhan.csv"))
+travel_data_mobs <- read_csv(paste0(dropbox_path,"data/mobs_connectivity_data.csv"))
+international_conf_data_in <- read_csv(paste0(dropbox_path,"data/international_case_data.csv"))
+international_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_WHO_report.csv"))
+china_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_bioRvix_Liu_et_al.csv"))
+wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_lancet_huang_et_al.csv"))
+wuhan_conf_data_in <- read_csv(paste0(dropbox_path,"data/time_series_HKU_Wuhan.csv"))
 
 # - - -
 # Load model and plotting functions

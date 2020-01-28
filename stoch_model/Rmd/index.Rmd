@@ -20,7 +20,7 @@ To understand how human-to-human transmission varied in Wuhan during the early s
 
 ## Methods summary
 
-• To estimate the early dynamics of transmission in Wuhan, we fitted a mathematical model to multiple available datasets on international exported cases from Wuhan and cases in Wuhan. Fitting to multiple data sources rather than a single dataset (or data point) is particularly useful for estimates real-time, because some datasets may be unreliable. 
+• To estimate the early dynamics of transmission in Wuhan, we fitted a mathematical model to multiple available datasets on international exported cases from Wuhan and cases in Wuhan. Fitting to multiple data sources rather than a single dataset (or data point) is particularly useful for estimates in real-time, because some datasets may be unreliable. 
 
 • Transmission was a random process in the model, and could vary over time -- this means the model can uncover fluctuations in transmission during the early stages of the outbreak. Our group previously used a similar analysis to understand the dynamics of [Ebola in Liberia](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5394640/).
 
@@ -56,7 +56,7 @@ knitr::include_graphics("../plots/cases_inference_1.png")
 
 #### Model
 
-We used a stochastic SEIR model implemented using the Euler-Maruyama algorithm with a 6hr timestep, with transmission rate following geometric brownian motion (i.e. dlog(beta) = s dBt, where s is the volatility of transmission over time). We assume no travel out of Wuhan occurs after 23rd Jan, when restrictions were put in place. Cases that travel were distributed among other countries based on [risk inferred from connectivity to those countries]((https://www.mobs-lab.org/2019ncov.html).
+We used a stochastic SEIR model implemented using the Euler-Maruyama algorithm with a 6hr timestep, with transmission rate following geometric brownian motion (i.e. dlog(beta) = s dBt, where s is the volatility of transmission over time). We assume no travel out of Wuhan occurs after 23rd Jan, when restrictions were put in place. Cases that travel were distributed among other countries based on [risk inferred from connectivity to those countries](https://www.mobs-lab.org/2019ncov.html).
 
 ```{r fig_schematic, echo=FALSE, fig.align='center', fig.cap="_Figure 2: Model schematic. The population is divided into susceptible-exposed-infectious-removed classes, with a fraction of exposed individuals subsequently travelling and eventually being detected in their destination country_", out.width = '40%'}
 knitr::include_graphics("../plots/schematic.png")
