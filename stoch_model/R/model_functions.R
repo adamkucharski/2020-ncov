@@ -86,9 +86,9 @@ smc_model <- function(theta,nn,dt=1){
   storeL <- array(0,dim=c(nn,t_length, length(theta_initNames)),dimnames = list(NULL,NULL,theta_initNames))
   
   # Add initial condition
-  storeL[,1,"exp1"] <- theta[["init_cases"]]
-  storeL[,1,"exp2"] <- theta[["init_cases"]]
-  storeL[,1,"inf1"] <- theta[["init_cases"]]
+  #storeL[,1,"exp1"] <- theta[["init_cases"]]
+  #storeL[,1,"exp2"] <- theta[["init_cases"]]
+  #storeL[,1,"inf1"] <- theta[["init_cases"]]
   storeL[,1,"inf2"] <- theta[["init_cases"]]
   storeL[,1,"sus"] <- theta[["pop_travel"]] - 4*theta[["init_cases"]]
   

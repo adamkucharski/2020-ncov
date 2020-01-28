@@ -20,14 +20,14 @@ knitr::opts_chunk$set(echo = FALSE)
 
 • **Transmission was a random process in the model, and could vary over time -- this means the model can uncover fluctuations in transmission** that might be the result of increased transmission or reductions from control measures. Our group previously used a similar analysis to understand the dynamics of [Ebola in Liberia](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5394640/)
 
-• **We assumed that the chance of cases being exported from Wuhan to other countries depended on the number of cases in Wuhan, the number of outbound travellers (accounting for travel restrictions after 23rd January), and the [relative connectivity of different countries](https://www.mobs-lab.org/2019ncov.html)**. We considered the 30 countries outside China most at risk of exported cases in the analysis. The model accounts for delays in symptom onset and reported (see methods below).
+• **We assumed that the chance of cases being exported from Wuhan to other countries depended on the number of cases in Wuhan, the number of outbound travellers (accounting for travel restrictions after 23rd January), and the relative connectivity of different countries**. We considered the 30 countries outside China most at risk of exported cases in the analysis. The model accounts for delays in symptom onset and reporting (see methods below).
 
 • **We estimated the reproduction had been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R>2 in early January**. We found some evidence of a decline in the reproduction number after a peak in early January.
 
 • Our model suggests that **exported cases linked to Wuhan will continue to be observed in the coming days, but gradually decline**. We have growing uncertainty in our estimates after 23rd Jan because the signal from international cases gets weaker after travel restrictions were introduced.
 
 
-```{r fig_inference, echo=FALSE, fig.align='center', fig.cap="_Figure 1: Dynamics of transmission in Wuhan, fitted up to 28th Jan. A) Estimated prevalence of symptomatic cases over time. Red line: travel restrictions imposed on 23rd Jan. B) Estimated reproduction number over time. C) Onset dates of confirmed cases in Wuhan (triangles) and China (circles). D) Estimated internationally exported cases from Wuhan by date of onset (blue) along with reported cases by date of onset (black). E) Cumulative confirmed cases by date in Wuhan. F) Internationally exported cases by date of confirmation. In all figures, blue lines and shaded regions show median, 50% CrI and 95% CrI. Thick black borders show datasets we fitted to. _", out.width = '80%'}
+```{r fig_inference, echo=FALSE, fig.align='center', fig.cap="_Figure 1: Dynamics of transmission in Wuhan, fitted up to 28th Jan. A) Estimated prevalence of symptomatic cases over time. Red line: travel restrictions imposed on 23rd Jan. B) Estimated basic reproduction number (R0) over time. C) Onset dates of confirmed cases in Wuhan (triangles) and China (circles). D) Estimated internationally exported cases from Wuhan by date of onset (blue) along with reported cases by date of onset (black). E) Cumulative confirmed cases by date in Wuhan. F) Internationally exported cases by date of confirmation. In all figures, blue lines and shaded regions show median, 50% CrI and 95% CrI. Thick black borders show datasets we fitted to. _", out.width = '80%'}
 knitr::include_graphics("../plots/cases_inference_1.png")
 ```
 
@@ -39,7 +39,7 @@ knitr::include_graphics("../plots/cases_inference_1.png")
 
 • The cumulative case totals in Figure 1E should in theory only increase over time; the drop seen in early case is likely the result of reclassification of cases.
 
-• We are currently using [risk ranking by MOBS lab](https://www.mobs-lab.org/2019ncov.html) for exported cases, but are also exploring other datasets.
+• We are currently using [connectivity estimates from MOBS lab](https://www.mobs-lab.org/2019ncov.html) for exported cases, but are also exploring other datasets.
 
 • We omitted the two most recent data points in the onset datasets when fitting the model, as these were likely to be strongly influenced by reporting delays. However, we obtained similar results when the four most recent data points were omitted.
 
@@ -50,7 +50,7 @@ knitr::include_graphics("../plots/cases_inference_1.png")
 
 #### Model
 
-We used a stochastic SEIR model implemented using the Euler-Maruyama algorithm with a 6hr timestep, with transmission rate following geometric brownian motion (i.e. dlog(beta) = s dBt, where s is the volatility of transmission over time). We assume no travel out of Wuhan occurs after 23rd Jan, when restrictions were put in place. 
+We used a stochastic SEIR model implemented using the Euler-Maruyama algorithm with a 6hr timestep, with transmission rate following geometric brownian motion (i.e. dlog(beta) = s dBt, where s is the volatility of transmission over time). We assume no travel out of Wuhan occurs after 23rd Jan, when restrictions were put in place. Cases that travel were distributed among other countries based on [risk inferred from connectivity to those countries]((https://www.mobs-lab.org/2019ncov.html).
 
 ```{r fig_schematic, echo=FALSE, fig.align='center', fig.cap="_Figure 2: Model schematic. The population is divided into susceptible-exposed-infectious-removed, with a fraction of exposed individuals subsequently travelling and eventually being detected in their destination country_", out.width = '40%'}
 knitr::include_graphics("../plots/schematic.png")
@@ -58,25 +58,25 @@ knitr::include_graphics("../plots/schematic.png")
 
 #### Fitting
 
-We estimated the time varying reproduction using sequential Monte Carlo by jointly fitting to three datasets:
+We estimated the time-varying R0 using sequential Monte Carlo (SMC) by jointly fitting to three datasets:
 
 1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of onset.  The most recent two data points are omitted during fitting as they are likely to be strongly influenced by delays in reporting. Source: [WHO](https://www.who.int/docs/default-source/coronaviruse/situation-reports/20200126-sitrep-6-2019--ncov.pdf) 
 
 1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of confirmation. Source: News reports, WHO, [Kraemer et al data repo](https://docs.google.com/spreadsheets/d/1itaohdPiAeniCXNlntNztZ_oRvjh0HsGuJXUJWET008/edit?usp=sharing)
 
 1. Daily incidence of initial cases in Wuhan with no market exposure, by date of onset. Source: [Huang et al](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30183-5/fulltext) 
-
 1. Daily incidence of early cases in China, by date of onset. We assume that these are all in Wuhan.  The most recent two data points are omitted during fitting as they are likely to be strongly influenced by delays in reporting. Source: [Liu et al](https://www.biorxiv.org/content/10.1101/2020.01.25.919787v1), [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)
 
 1. _Validation dataset (not used for fitting): Daily incidence of cases in Wuhan, by date of confirmation. Source: [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)_
 
-We used a Poisson observation model with different relative reporting probability for cases inside and outside of Wuhan, and only a proportion of cases having known onset dates. 
+To calculate the likelihood, we used a Poisson observation model fitted jointly to multiple model outputs. To calculate the daily expectation for each Poisson observation process, we converted the model (Figure 2) outputs into new case onset and new reported cases inside Wuhan and travelling internationally.  As destination country was known for confirmed exported cases, we used 30 timeseries for cases exported (or not) to most at-risk countries each day and calculated the probability of obtaining each of these datasets given the model outputs. International onset data was not disaggregated by country and so we used the total daily exported cases in our Poisson probability calculation. We assumed a different relative reporting probability for Wuhan cases compared to international cases, as assumed only a proportion of confirmed Wuhan cases had known onset dates (fixed at 0.15 based on [available line list data]](http://virological.org/t/epidemiological-data-from-the-ncov-2019-outbreak-early-descriptions-from-publicly-available-data/337)) 
 
-Plots were generated by running 200 repetitions of SMC with 1000 particles. The volatility and reporting parameters were selected based on a grid search to find the maximum likelihood. We assumed the outbreak started on 15th November with 1 infectious individual and 1 in their incubation period. We also assume all infectious people eventually become symptomatic and would be eventually be detected in destination country if they travelled by plane. We assumed that the population at risk was 10m (rather than 19m assumed in Imperial analysis) because most cases to date are adults and this group are more likely to travel. Model is available here: https://github.com/adamkucharski/2020-ncov
+
+Estimates for time-varying R0 generated by running 200 repetitions of SMC with 1000 particles. The transmission volatility and relative reporting of cases outside Wuhan were selected based on a grid search to find the marginal MLE We assumed the outbreak started on 2nd December with 1 infectious individual and the population was initially fully susceptible. We also assumed all infectious people eventually became symptomatic and would be eventually be detected in destination country if they travelled by plane. We assumed that the population at risk was 10m (rather than 19m assumed in Imperial analysis) because most cases to date are adults and this group are more likely to travel. Model is available here: https://github.com/adamkucharski/2020-ncov
 
 #### Parameters
 
-Parameters used in the model are as follows. Durations within the E and I compartments are Erlang distributed with rate 2.
+Parameters used in the model are as follows. To improve realism based on early date, we assume the incubation and infectious period are Erlang distributed with rate 2.
 
 | Parameter      | Value | Distribution | Source
 | ----------- | ----------- | ----------- | ----------- |
