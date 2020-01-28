@@ -1,5 +1,5 @@
 ---
-title: "Analysis of transmission and control of nCoV in Wuhan"
+title: "Analysis of early transmission dynamics of nCoV in Wuhan"
 output:
   html_document: default
   pdf_document: default
@@ -14,15 +14,21 @@ knitr::opts_chunk$set(echo = FALSE)
 *Contributors: Adam Kucharski, Rosalind Eggo, Tim Russell, Charlie Diamond, and CMMID nCoV team.*
 *Note: this is preliminary analysis and has not yet been peer-reviewed.*
 
-## Summary
+## Aim
 
-• **To estimate the early dynamics of transmission in Wuhan, we fitted a mathematical model to multiple available datasets** on international exported cases from Wuhan and cases in Wuhan. Fitting to multiple data sources rather than a single dataset (or data point) is particularly useful for estimates real-time, because some datasets may be unreliable. 
+To understand how human-to-human transmission varied in Wuhan during the early stages of the 2019-2020 nCoV outbreak.
 
-• **Transmission was a random process in the model, and could vary over time -- this means the model can uncover fluctuations in transmission** that might be the result of increased transmission or reductions from control measures. Our group previously used a similar analysis to understand the dynamics of [Ebola in Liberia](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5394640/)
+## Methods summary
 
-• **We assumed that the chance of cases being exported from Wuhan to other countries depended on the number of cases in Wuhan, the number of outbound travellers (accounting for travel restrictions after 23rd January), and the relative connectivity of different countries**. We considered the 30 countries outside China most at risk of exported cases in the analysis. The model accounts for delays in symptom onset and reporting (see methods below).
+• To estimate the early dynamics of transmission in Wuhan, we fitted a mathematical model to multiple available datasets on international exported cases from Wuhan and cases in Wuhan. Fitting to multiple data sources rather than a single dataset (or data point) is particularly useful for estimates real-time, because some datasets may be unreliable. 
 
-• **We estimated the reproduction had been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R>2 in early January**. We found some evidence of a decline in the reproduction number after a peak in early January.
+• Transmission was a random process in the model, and could vary over time -- this means the model can uncover fluctuations in transmission during the early stages of the outbreak. Our group previously used a similar analysis to understand the dynamics of [Ebola in Liberia](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5394640/)
+
+• We assumed that the chance of cases being exported from Wuhan to other countries depended on the number of cases in Wuhan, the number of outbound travellers (accounting for travel restrictions after 23rd January), and the relative connectivity of different countries. We considered the 30 countries outside China most at risk of exported cases in the analysis. The model accounts for delays in symptom onset and reporting (see methods below).
+
+## Key results
+
+• **We estimated that R0 had been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R>2 in early January**. We also found evidence of a decline in the reproduction number after a peak in early January.
 
 • Our model suggests that **exported cases linked to Wuhan will continue to be observed in the coming days, but gradually decline**. We have growing uncertainty in our estimates after 23rd Jan because the signal from international cases gets weaker after travel restrictions were introduced.
 
@@ -46,7 +52,7 @@ knitr::include_graphics("../plots/cases_inference_1.png")
 • The model is flexible, and this page will be updated as we incorporate new information and data.
 
 
-## Methods
+## Detailed methods
 
 #### Model
 
