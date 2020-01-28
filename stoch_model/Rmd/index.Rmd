@@ -11,7 +11,7 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-*Contributors: Adam Kucharski, Rosalind Eggo, Tim Russell, Charlie Diamond, and the CMMID nCoV analysis group.*
+*Contributors: Adam Kucharski, Rosalind Eggo, Tim Russell, Charlie Diamond, and CMMID nCoV team.*
 
 ## Summary
 
@@ -23,14 +23,16 @@ knitr::opts_chunk$set(echo = FALSE)
 
 
 ```{r fig_inference, echo=FALSE, fig.align='center', fig.cap="_Figure: Dynamics of transmission in Wuhan, fitted up to 28th Jan. A) Estimated prevalence of symptomatic cases over time. Red line: travel restrictions imposed on 23rd Jan. B) Estimated reproduction number over time. C) Onset dates of confirmed cases in Wuhan (triangles) and China (circles). D) Estimated internationally exported cases from Wuhan by date of onset (blue) along with reported cases by date of onset (black). E) Cumulative confirmed cases by date in Wuhan. F) Internationally exported cases by date of confirmation. In all figures, blue lines and shaded regions show median, 50% CrI and 95% CrI. Thick black borders show datasets we fitted to. _", out.width = '80%'}
-knitr::include_graphics("../plots/cases_inference.png")
+knitr::include_graphics("../plots/cases_inference_1.png")
 ```
 
 ## Caveats and ongoing work
 
 • We used biological parameters from current papers, but these may change as we get better data. We also made assumptions about the proportion of people who travel following the methods in the [J-IDEA reports](https://www.imperial.ac.uk/mrc-global-infectious-disease-analysis/news--wuhan-coronavirus/). However, jointly fitting to multiple datasets will reduce the influence that one single dataset has on results.
 
-• We are currently using [risk ranking by MOBS lab](https://www.mobs-lab.org/2019ncov.html) for exported cases, but are also exploring other datasets
+• We are currently using [risk ranking by MOBS lab](https://www.mobs-lab.org/2019ncov.html) for exported cases, but are also exploring other datasets.
+
+• We omitted the two most recent data points in the onset datasets when fitting the model, as these were likely to be strongly influenced by reporting delays. However, we obtained similar results when the four most recent data points were omitted.
 
 • The model is flexible, so we can (and will) incorporate new information and data as it comes available.
 
@@ -48,13 +50,13 @@ knitr::include_graphics("../plots/schematic.png")
 #### Fitting
 
 We estimated the time varying reproduction using sequential Monte Carlo by jointly fitting to three datasets:
-1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of onset. Source: [WHO](https://www.who.int/docs/default-source/coronaviruse/situation-reports/20200126-sitrep-6-2019--ncov.pdf) 
+1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of onset.  The most recent two data points are omitted during fitting as they are likely to be strongly influenced by delays in reporting. Source: [WHO](https://www.who.int/docs/default-source/coronaviruse/situation-reports/20200126-sitrep-6-2019--ncov.pdf) 
 
 1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of confirmation. Source: News reports, WHO, [Kraemer et al data repo](https://docs.google.com/spreadsheets/d/1itaohdPiAeniCXNlntNztZ_oRvjh0HsGuJXUJWET008/edit?usp=sharing)
 
 1. Daily incidence of initial cases in Wuhan with no market exposure, by date of onset. Source: [Huang et al](https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(20)30183-5/fulltext) 
 
-1. Daily incidence of early cases in China, by date of onset. We assume that these are all in Wuhan. Source: [Liu et al](https://www.biorxiv.org/content/10.1101/2020.01.25.919787v1), [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)
+1. Daily incidence of early cases in China, by date of onset. We assume that these are all in Wuhan.  The most recent two data points are omitted during fitting as they are likely to be strongly influenced by delays in reporting. Source: [Liu et al](https://www.biorxiv.org/content/10.1101/2020.01.25.919787v1), [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)
 
 1. _Validation dataset (not used for fitting): Daily incidence of cases in Wuhan, by date of confirmation. Source: [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)_
 

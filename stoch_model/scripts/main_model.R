@@ -83,7 +83,7 @@ output_smc$lik
 
 # - - -
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=150, # number of repeats
+plot_outputs(rep_plot=200, # number of repeats
              nn=1e3, #number of particles
              cut_off = 0 #max(0,as.numeric(end_date - wuhan_travel_restrictions)) # omit final X days for R calculations?
              )
