@@ -129,26 +129,26 @@ plot_outputs <- function(){
   text(labels="fitted data",x=xMin1,y=0.8*30,adj=0,col="black")
   
   points(case_data_wuhan$date,case_data_wuhan$number,pch=2)
-  points(case_data_china$date,case_data_china$number)
+  points(case_data_china$date,case_data_china$number,pch=19)
   
   title(LETTERS[letR],adj=0); letR = letR +1
-  box(lty = 1, col = 'black',lwd=3)
   
+  # - - -
   # Plot international cases onsets
   plot(date_range,case_time,pch=19,ylim=c(0,8),xlim=c(xMin1,xMax),ylab="new international onsets",col="white")
   
   polygon(c(date_range,rev(date_range)),c(Case_quantile[2,],rev(Case_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(Case_quantile[1,],rev(Case_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_range,Case_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
-  points(date_range,case_data_onset_time)
-  
+  points(date_range,case_data_onset_time,pch=19)
+
   text(labels="model estimate",x=xMin1,y=0.9*8,adj=0,col="blue")
   text(labels="fitted data",x=xMin1,y=0.8*8,adj=0,col="black")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   title(LETTERS[letR],adj=0); letR = letR +1
-  box(lty = 1, col = 'black',lwd=3)
   
+  # - - -
   # Plot local cases confirmed
   plot(date_range,case_time,pch=19,ylim=c(0,1000),xlim=c(xMin1,xMax),ylab="new cases confirmed in Wuhan",col="white")
   
@@ -169,8 +169,7 @@ plot_outputs <- function(){
   polygon(c(date_range,rev(date_range)),c(Rep_quantile[2,],rev(Rep_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(Rep_quantile[1,],rev(Rep_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_range,Rep_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
-  points(date_range,case_time)
-  box(lty = 1, col = 'black',lwd=3)
+  points(date_range,case_time,pch=19)
   
   text(labels="model estimate",x=xMin1,y=0.9*8,adj=0,col="blue")
   text(labels="fitted data",x=xMin1,y=0.8*8,adj=0,col="black")
