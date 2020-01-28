@@ -12,29 +12,38 @@ knitr::opts_chunk$set(echo = FALSE)
 ```
 
 *Contributors: Adam Kucharski, Rosalind Eggo, Tim Russell, Charlie Diamond, and CMMID nCoV team.*
+*Note: this is preliminary analysis and has not been peer reviewed*
 
 ## Summary
 
-• To estimate the early dynamics of transmission and control in Wuhan, we fitted a stochastic transmission model to multiple datasets: temporal data on date of onset of international exported cases from Wuhan; date of onset and confirmed cases in Wuhan. Export rate to different countries was weighted based on the [risk ranking by MOBS lab](https://www.mobs-lab.org/2019ncov.html) - WorldPop have a similar risk ranking (see [Table 5 here](https://www.worldpop.org/events/china)). We considered the 30 countries most at risk in the analysis. The model accounts for delays in symptom onset and reported (see methods below).
+• **To estimate the early dynamics of transmission in Wuhan, we fitted a mathematical outbreak model to multiple available datasets** on international exported cases from Wuhan and cases in Wuhan. Fitting to multiple data sources rather than a single dataset (or data point) is particularly useful for estimates real-time, because some datasets may be unreliable. 
 
-• We estimated the reproduction had been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R>2 in early January. We found some evidence of a decline in the reproduction number after a peak in early January.
+• **Transmission was a random process in the model, and could vary over time. This means the model can uncover fluctuations in transmission** that might be the result of increased transmission or reductions from control measures. Our group previously used a similar analysis to understand the dynamics of [Ebola in Liberia](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5394640/)
 
-• Our model suggests that exported cases linked to Wuhan will continue to be observed in the coming days, but gradually decline. We have growing uncertainty in our estimates after 23rd Jan because the signal from international cases gets weaker after travel restrictions were introduced.
+• **We assumed that the chance of cases being exported from Wuhan to other countries depended on the number of cases in Wuhan, the number of outbound travellers (accounting for travel restrictions after 23rd January), and the [relative connectivity of different countries](https://www.mobs-lab.org/2019ncov.html)**. We considered the 30 countries outside China most at risk of exported cases in the analysis. The model accounts for delays in symptom onset and reported (see methods below).
+
+• **We estimated the reproduction had been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R>2 in early January**. We found some evidence of a decline in the reproduction number after a peak in early January.
+
+• Our model suggests that *exported cases linked to Wuhan will continue to be observed in the coming days, but gradually decline*. We have growing uncertainty in our estimates after 23rd Jan because the signal from international cases gets weaker after travel restrictions were introduced.
 
 
-```{r fig_inference, echo=FALSE, fig.align='center', fig.cap="_Figure: Dynamics of transmission in Wuhan, fitted up to 28th Jan. A) Estimated prevalence of symptomatic cases over time. Red line: travel restrictions imposed on 23rd Jan. B) Estimated reproduction number over time. C) Onset dates of confirmed cases in Wuhan (triangles) and China (circles). D) Estimated internationally exported cases from Wuhan by date of onset (blue) along with reported cases by date of onset (black). E) Cumulative confirmed cases by date in Wuhan. F) Internationally exported cases by date of confirmation. In all figures, blue lines and shaded regions show median, 50% CrI and 95% CrI. Thick black borders show datasets we fitted to. _", out.width = '80%'}
+```{r fig_inference, echo=FALSE, fig.align='center', fig.cap="_Figure 1: Dynamics of transmission in Wuhan, fitted up to 28th Jan. A) Estimated prevalence of symptomatic cases over time. Red line: travel restrictions imposed on 23rd Jan. B) Estimated reproduction number over time. C) Onset dates of confirmed cases in Wuhan (triangles) and China (circles). D) Estimated internationally exported cases from Wuhan by date of onset (blue) along with reported cases by date of onset (black). E) Cumulative confirmed cases by date in Wuhan. F) Internationally exported cases by date of confirmation. In all figures, blue lines and shaded regions show median, 50% CrI and 95% CrI. Thick black borders show datasets we fitted to. _", out.width = '80%'}
 knitr::include_graphics("../plots/cases_inference_1.png")
 ```
 
-## Caveats and ongoing work
+## Discussion, caveats and ongoing work
+
+• The estimated peak in R0 in early Jan (Figure 1B) is the risk of a sudden rise in cases around 16th January both in Wuhan (Figure 1C) and internationally (Figure 1F).
 
 • We used biological parameters from current papers, but these may change as we get better data. We also made assumptions about the proportion of people who travel following the methods in the [J-IDEA reports](https://www.imperial.ac.uk/mrc-global-infectious-disease-analysis/news--wuhan-coronavirus/). However, jointly fitting to multiple datasets will reduce the influence that one single dataset has on results.
+
+• The cumulative case totals in Figure 1E should in theory only increase over time; the drop seen in early case is likely the result of reclassification of cases.
 
 • We are currently using [risk ranking by MOBS lab](https://www.mobs-lab.org/2019ncov.html) for exported cases, but are also exploring other datasets.
 
 • We omitted the two most recent data points in the onset datasets when fitting the model, as these were likely to be strongly influenced by reporting delays. However, we obtained similar results when the four most recent data points were omitted.
 
-• The model is flexible, so we can (and will) incorporate new information and data as it comes available.
+• The model is flexible, and this page will be updated as we incorporate new information and data.
 
 
 ## Methods
@@ -43,13 +52,14 @@ knitr::include_graphics("../plots/cases_inference_1.png")
 
 We used a stochastic SEIR model implemented using the Euler-Maruyama algorithm with a 6hr timestep, with transmission rate following geometric brownian motion (i.e. dlog(beta) = s dBt, where s is the volatility of transmission over time). We assume no travel out of Wuhan occurs after 23rd Jan, when restrictions were put in place. 
 
-```{r fig_schematic, echo=FALSE, fig.align='center', fig.cap="_Figure: Model schematic. The population is divided into susceptible-exposed-infectious-removed, with a fraction of exposed individuals subsequently travelling and eventually being detected in their destination country_", out.width = '40%'}
+```{r fig_schematic, echo=FALSE, fig.align='center', fig.cap="_Figure 2: Model schematic. The population is divided into susceptible-exposed-infectious-removed, with a fraction of exposed individuals subsequently travelling and eventually being detected in their destination country_", out.width = '40%'}
 knitr::include_graphics("../plots/schematic.png")
 ```
 
 #### Fitting
 
 We estimated the time varying reproduction using sequential Monte Carlo by jointly fitting to three datasets:
+
 1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of onset.  The most recent two data points are omitted during fitting as they are likely to be strongly influenced by delays in reporting. Source: [WHO](https://www.who.int/docs/default-source/coronaviruse/situation-reports/20200126-sitrep-6-2019--ncov.pdf) 
 
 1. Daily incidence of exported cases from Wuhan (or lack thereof) in countries with high connectivity to Wuhan (i.e. top 30 most at risk), by date of confirmation. Source: News reports, WHO, [Kraemer et al data repo](https://docs.google.com/spreadsheets/d/1itaohdPiAeniCXNlntNztZ_oRvjh0HsGuJXUJWET008/edit?usp=sharing)
@@ -60,7 +70,9 @@ We estimated the time varying reproduction using sequential Monte Carlo by joint
 
 1. _Validation dataset (not used for fitting): Daily incidence of cases in Wuhan, by date of confirmation. Source: [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)_
 
-We used a Poisson observation model with different relative reporting probability for cases inside and outside of Wuhan, and only a proportion of cases having known onset dates. Plots were generated by running 200 repetitions of SMC with 1000 particles. The volatility and reporting parameters were selected based on a grid search to find the maximum likelihood. We assumed the outbreak started on 15th November with 1 infectious individual and 1 in their incubation period. We also assume all infectious people eventually become symptomatic and would be eventually be detected in destination country if they travelled by plane. We assumed that the population at risk was 10m (rather than 19m assumed in Imperial analysis) because most cases to date are adults and this group are more likely to travel.
+We used a Poisson observation model with different relative reporting probability for cases inside and outside of Wuhan, and only a proportion of cases having known onset dates. 
+
+Plots were generated by running 200 repetitions of SMC with 1000 particles. The volatility and reporting parameters were selected based on a grid search to find the maximum likelihood. We assumed the outbreak started on 15th November with 1 infectious individual and 1 in their incubation period. We also assume all infectious people eventually become symptomatic and would be eventually be detected in destination country if they travelled by plane. We assumed that the population at risk was 10m (rather than 19m assumed in Imperial analysis) because most cases to date are adults and this group are more likely to travel. Model is available here: https://github.com/adamkucharski/2020-ncov
 
 #### Parameters
 
@@ -69,13 +81,13 @@ Parameters used in the model are as follows. Durations within the E and I compar
 | Parameter      | Value | Distribution | Source
 | ----------- | ----------- | ----------- | ----------- |
 | Incubation period      | 4.8 days       | Erlang (rate=2) | [Liu et al](https://www.biorxiv.org/content/10.1101/2020.01.25.919787v1)
-| Infectious period   | 2.9 days        | Erlang (rate=2) | [Liu et al](https://www.biorxiv.org/content/10.1101/2020.01.25.919787v1), [Kraemer](http://virological.org/t/epidemiological-data-from-the-ncov-2019-outbreak-early-descriptions-from-publicly-available-data/337)
-| Delay onset-to-confirmation  | 6.1 days        | Exponential | [Kraemer](http://virological.org/t/epidemiological-data-from-the-ncov-2019-outbreak-early-descriptions-from-publicly-available-data/337)
+| Infectious period   | 2.9 days        | Erlang (rate=2) | [Liu et al](https://www.biorxiv.org/content/10.1101/2020.01.25.919787v1), [Xu et al](http://virological.org/t/epidemiological-data-from-the-ncov-2019-outbreak-early-descriptions-from-publicly-available-data/337)
+| Delay onset-to-confirmation  | 6.1 days        | Exponential | [Xu et al](http://virological.org/t/epidemiological-data-from-the-ncov-2019-outbreak-early-descriptions-from-publicly-available-data/337)
 | Daily outbound passengers   | 3300        | - | [J-IDEA](https://www.imperial.ac.uk/mrc-global-infectious-disease-analysis/news--wuhan-coronavirus/)
 | Population at risk   | 10m        | - | [J-IDEA](https://www.imperial.ac.uk/mrc-global-infectious-disease-analysis/news--wuhan-coronavirus/)
 | Initial cases   | 1        | - | [Andersen](http://virological.org/t/clock-and-tmrca-based-on-27-genomes/347)
 | Introduction date  | 2019-12-02        | - | [Andersen](http://virological.org/t/clock-and-tmrca-based-on-27-genomes/347)
-| Proportion of cases with onsets known   | 0.15     | - | [Kraemer et al data repo](https://docs.google.com/spreadsheets/d/1itaohdPiAeniCXNlntNztZ_oRvjh0HsGuJXUJWET008/edit?usp=sharing)
+| Proportion of cases with onsets known   | 0.15     | - | [Xu et al](https://github.com/beoutbreakprepared/nCoV2019)
 | Relative reporting outside of Wuhan   | 170     | - | Estimated
 | Transmission volatility   | 0.5        | - | Estimated
 
