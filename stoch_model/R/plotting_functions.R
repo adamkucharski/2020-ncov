@@ -2,12 +2,13 @@
 
 plot_outputs <- function(rep_plot,nn,cut_off){
   
-  # rep_plot <- 10; nn <- 100; cut_off=5
+  # rep_plot <- 10; nn <- 100; cut_off=0
   
   # Get median and 95%
   S_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   I_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_local_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
+  Rep_local_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   Rep_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   R0_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
@@ -17,9 +18,11 @@ plot_outputs <- function(rep_plot,nn,cut_off){
     I_plot[,kk] <- output_smc$I_trace
     S_plot[,kk] <- output_smc$S_trace
     case_local_pos <- theta[["local_rep_prop"]]*(output_smc$C_local_trace - c(0,head(output_smc$C_local_trace,-1)))
-    C_local_plot[,kk] <- case_local_pos #rpois(length(case_local_pos),lambda=case_local_pos)
-    C_plot[,kk] <- output_smc$C_trace - c(0,head(output_smc$C_trace,-1))
-    Rep_plot[,kk] <- output_smc$Rep_trace - c(0,head(output_smc$Rep_trace,-1)) # case difference
+    C_local_plot[,kk] <- rpois(length(case_local_pos),lambda=case_local_pos)
+    rep_local_pos <- theta[["local_rep_prop"]]*(output_smc$Rep_local_trace - c(0,head(output_smc$Rep_local_trace,-1)))
+    Rep_local_plot[,kk] <- rpois(length(rep_local_pos),lambda=rep_local_pos)
+    C_plot[,kk] <- fit_int_cases(output_smc$C_trace - c(0,head(output_smc$C_trace,-1)))
+    Rep_plot[,kk] <- fit_int_cases(output_smc$Rep_trace - c(0,head(output_smc$Rep_trace,-1))) # case difference
     R0_plot[,kk] <- (S_plot[,kk]/theta[["pop_travel"]])*output_smc$beta_trace/(theta[["recover"]])
   }
   
@@ -29,6 +32,10 @@ plot_outputs <- function(rep_plot,nn,cut_off){
 
   # Local cases
   Case_local_quantile <- apply(C_local_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
+  Case_local_quantile_onset <- theta[["onset_prop"]]*Case_local_quantile
+  
+  Rep_local_quantile <- apply(Rep_local_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
+  
   # International onset
   Case_quantile <- apply(C_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
   # International confirmed
@@ -46,7 +53,7 @@ plot_outputs <- function(rep_plot,nn,cut_off){
   # Calculate daily incidence
   #Case_diff_quantile <- Case_quantile[,1:ncol(Case_quantile)] - cbind(c(0,0,0),Case_quantile[,1:(ncol(Case_quantile)-1)])
   
-  par(mfcol=c(3,2),mar=c(2,3,1,1),mgp=c(2,0.7,0))
+  par(mfrow=c(3,2),mar=c(2,3,1,1),mgp=c(2,0.7,0))
   
   # Plot outputs
   a_col <- 0.4 # alpha
@@ -57,12 +64,13 @@ plot_outputs <- function(rep_plot,nn,cut_off){
   
   # Plot outputs
   # Plot estimated local infections
-  plot(date_rangeA,Inf_quantileA[1,],col="white",ylim=c(0,yMax),xlim=c(xMin1,xMax),xlab="",ylab="prevalence in Wuhan (thousands)")
+  plot(date_rangeA,Inf_quantileA[1,],col="white",ylim=c(0,1.2*yMax),xlim=c(xMin1,xMax),xlab="",ylab="prevalence in Wuhan (thousands)")
   polygon(c(date_rangeA,rev(date_rangeA)),c(Inf_quantileA[2,],rev(Inf_quantileA[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_rangeA,rev(date_rangeA)),c(Inf_quantileA[1,],rev(Inf_quantileA[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_rangeA,Inf_quantileA[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
+  text(labels="travel restrictions",x=wuhan_travel_restrictions-0.5,y=1.1*yMax,adj=1,col="red")
   title(LETTERS[1],adj=0); letR = 2
   
   # Plot reproduction number
@@ -74,6 +82,7 @@ plot_outputs <- function(rep_plot,nn,cut_off){
   lines(date_rangeA,1+0*R0_quantileA[3,],lty=2)
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,10),col="red")
+  text(labels="travel restrictions",x=wuhan_travel_restrictions-0.5,y=9,adj=1,col="red")
   title(LETTERS[letR],adj=0); letR = letR + 1
   
   # Plot susceptibles
@@ -86,44 +95,57 @@ plot_outputs <- function(rep_plot,nn,cut_off){
   # title(LETTERS[2],adj=0)
   
   # Plot local cases onsets
-  plot(date_range,Case_local_quantile[1,],col="white",ylim=c(0,30),xlim=c(xMin1,xMax),xlab="",ylab="local onsets")
-  polygon(c(date_range,rev(date_range)),c(Case_local_quantile[2,],rev(Case_local_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
-  polygon(c(date_range,rev(date_range)),c(Case_local_quantile[1,],rev(Case_local_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_range,Case_local_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  plot(date_range,Case_local_quantile_onset[1,],col="white",ylim=c(0,30),xlim=c(xMin1,xMax),xlab="",ylab="local onsets")
+  polygon(c(date_range,rev(date_range)),c(Case_local_quantile_onset[2,],rev(Case_local_quantile_onset[4,])),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_range,rev(date_range)),c(Case_local_quantile_onset[1,],rev(Case_local_quantile_onset[5,])),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,Case_local_quantile_onset[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
 
   points(case_data_wuhan$date,case_data_wuhan$number,pch=2)
   points(case_data_china$date,case_data_china$number)
   
-  
   title(LETTERS[letR],adj=0); letR = letR +1
-  box(lty = 1, col = 'black',lwd=2.5)
+  box(lty = 1, col = 'black',lwd=3)
   
   # Plot international cases onsets
   plot(date_range,case_time,pch=19,ylim=c(0,8),xlim=c(xMin1,xMax),ylab="international onsets",col="white")
   
-  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Case_quantile[2,]),rev(fit_int_cases(Case_quantile[4,]))),lty=0,col=rgb(0,0.3,1,0.35))
-  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Case_quantile[1,]),rev(fit_int_cases(Case_quantile[5,]))),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_range,fit_int_cases(Case_quantile[3,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  polygon(c(date_range,rev(date_range)),c(Case_quantile[2,],rev(Case_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_range,rev(date_range)),c(Case_quantile[1,],rev(Case_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,Case_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   points(date_range,case_data_onset_time)
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   title(LETTERS[letR],adj=0); letR = letR +1
-  box(lty = 1, col = 'black',lwd=2.5)
-
-  # Plot international cases confirmed
-  plot(date_range,case_time,pch=19,ylim=c(0,8),xlim=c(xMin1,xMax),ylab="international confirmations",col="white")
+  box(lty = 1, col = 'black',lwd=3)
   
-  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Rep_quantile[2,]),rev(fit_int_cases(Rep_quantile[4,]))),lty=0,col=rgb(0,0.3,1,0.35))
-  polygon(c(date_range,rev(date_range)),c(fit_int_cases(Rep_quantile[1,]),rev(fit_int_cases(Rep_quantile[5,]))),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_range,fit_int_cases(Rep_quantile[3,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
-  points(date_range,case_time)
+  # Plot local cases confirmed
+  plot(date_range,case_time,pch=19,ylim=c(0,1000),xlim=c(xMin1,xMax),ylab="local confirmations",col="white")
+  
+  polygon(c(date_range,rev(date_range)),c(cumsum(Rep_local_quantile[2,]),rev(cumsum(Rep_local_quantile[4,]))),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_range,rev(date_range)),c(cumsum(Rep_local_quantile[1,]),rev(cumsum(Rep_local_quantile[5,]))),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,cumsum(Rep_local_quantile[3,]),type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  points(date_range,case_data_wuhan_conf_time)
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   title(LETTERS[letR],adj=0); letR = letR +1
-
-  dev.copy(png,paste("plots/case_inference.png",sep=""),units="cm",width=20,height=15,res=150)
+  
+  # Plot international cases confirmed
+  plot(date_range,case_time,pch=19,ylim=c(0,8),xlim=c(xMin1,xMax),ylab="international confirmations",col="white")
+  
+  polygon(c(date_range,rev(date_range)),c(Rep_quantile[2,],rev(Rep_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_range,rev(date_range)),c(Rep_quantile[1,],rev(Rep_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,Rep_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  points(date_range,case_time)
+  box(lty = 1, col = 'black',lwd=3)
+  
+  lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
+  title(LETTERS[letR],adj=0); letR = letR +1
+  
+  # output figure
+  dev.copy(png,paste("plots/cases_inference.png",sep=""),units="cm",width=20,height=15,res=150)
+  #dev.copy(pdf,paste("plots/cases_inference.pdf",sep=""),width=8,height=8)
   dev.off()
   
   
@@ -137,7 +159,7 @@ fit_int_cases <- function(x_val){
   
   x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
   x_lambda <- rowSums(x_expected)
-  #rpois(length(x_lambda),lambda=x_lambda)
-  x_lambda
-  
+  #x_lambda
+  rpois(length(x_lambda),lambda=x_lambda)
+
 }

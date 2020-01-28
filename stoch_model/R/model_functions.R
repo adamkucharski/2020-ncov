@@ -15,11 +15,13 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   cases_t <- simTab[,"cases"] # input function
   reports_t <- simTab[,"reports"] # input function
   cases_local_t <- simTab[,"cases_local"] # input function
+  reports_local_t <- simTab[,"reports_local"] # input function
   
   # scale transitions
   inf_rate <- (simzetaA/theta[["pop_travel"]])*dt
   inc_rate <- theta[["incubation"]]*2*dt
   rec_rate <- theta[["recover"]]*2*dt
+  rep_rate_local <- theta[["report_local"]]*dt
   rep_rate <- theta[["report"]]*dt
   travel_frac <- travelF
   
@@ -35,6 +37,7 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
     I1_to_I2 <- infectious_t1*rec_rate
     I2_to_R <- infectious_t2*rec_rate
     C_to_Rep <- cases_t*rep_rate
+    C_to_Rep_local <- cases_local_t*rep_rate_local
     
     # Process model for SEIR
     susceptible_t <- susceptible_t - S_to_E1
@@ -48,6 +51,8 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
     
     # Case tracking
     cases_local_t <- cases_local_t + E2_to_I1
+    reports_local_t <- reports_local_t + C_to_Rep_local
+    
     cases_t <- cases_t + E2_to_I1_tr
     reports_t <- reports_t + C_to_Rep
   }
@@ -62,6 +67,7 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   simTab[,"cases"] <- cases_t # output
   simTab[,"reports"] <- reports_t # output
   simTab[,"cases_local"] <- cases_local_t # output
+  simTab[,"reports_local"] <- reports_local_t # output
   
   simTab
   
@@ -91,10 +97,11 @@ smc_model <- function(theta,nn,dt=1){
   simzeta[1,] <- exp(simzeta[1,])*theta[["beta"]] # define IC
   
   # Latent variables
-  Rep_traj = matrix(NA,ncol=1,nrow=ttotal)
   S_traj = matrix(NA,ncol=1,nrow=ttotal)
   C_local_traj = matrix(NA,ncol=1,nrow=ttotal)
+  Rep_local_traj = matrix(NA,ncol=1,nrow=ttotal)
   C_traj = matrix(NA,ncol=1,nrow=ttotal)
+  Rep_traj = matrix(NA,ncol=1,nrow=ttotal)
   I_traj = matrix(NA,ncol=1,nrow=ttotal)
   beta_traj = matrix(NA,ncol=1,nrow=ttotal);
   w <- matrix(NA,nrow=nn,ncol=ttotal); w[,1] <- 1  # weights
@@ -117,11 +124,7 @@ smc_model <- function(theta,nn,dt=1){
     storeL[,tt,] <- process_model(tt-1,tt,dt,theta,storeL[,tt-1,],simzeta[tt,],travelF)
     
     # calculate weights
-    case_localDiff <- storeL[,tt,"cases_local"] - storeL[,tt-1,"cases_local"]
-    caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
-    repDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
-    w[,tt] <- AssignWeights(c_local_val=case_localDiff,c_val=caseDiff,rep_val=repDiff,
-                            local_case_data_tt=case_data_china_time[tt],case_data_tt=case_data_onset_time[tt],rep_data_tt=case_data_matrix[tt,], nn,theta) 
+    w[,tt] <- AssignWeights(data_list,storeL,nn,theta,tt)
     
     #c_local_val,c_val,rep_val,local_case_data_tt,case_data_tt,rep_data_tt,nn){
 
@@ -154,25 +157,27 @@ smc_model <- function(theta,nn,dt=1){
   # Sample latent variables:
   locs <-  sample(1:nn,prob = W[1:nn,tt],replace = T)
   l_sample[ttotal] <- locs[1]
-  Rep_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports"]
   C_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases"]
   C_local_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"cases_local"]
+  Rep_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports"]
+  Rep_local_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports_local"]
   S_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"sus"]
   I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf1"]+storeL[l_sample[ttotal],ttotal,"inf2"]
   beta_traj[ttotal,] <- simzeta[ttotal,l_sample[ttotal]]
   
   for(ii in seq(ttotal,2,-1)){
     l_sample[ii-1] <- A[l_sample[ii],ii] # have updated indexing
-    Rep_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports"]
-    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
     C_local_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases_local"]
+    Rep_local_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports_local"]
+    C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
+    Rep_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports"]
     S_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"sus"]
     I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
     beta_traj[ii-1,] <- simzeta[ii-1,l_sample[ii-1]]
   }
  
 
-  return(list(S_trace=S_traj,C_local_trace=C_local_traj,C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+  return(list(S_trace=S_traj,C_local_trace=C_local_traj,Rep_local_trace=Rep_local_traj,C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
   
   
 }
@@ -180,16 +185,41 @@ smc_model <- function(theta,nn,dt=1){
 
 # Likelihood calc for SMC --------------------------------------------
 
-AssignWeights <- function(c_local_val,c_val,rep_val,local_case_data_tt,case_data_tt,rep_data_tt,nn,theta){
+AssignWeights <- function(data_list,storeL,nn,theta,tt){
   
-  # c_local_val=case_localDiff; c_val=caseDiff; rep_val=repDiff; local_case_data_tt=case_data_china_time[tt]; case_data_tt=case_data_onset_time[tt]; rep_data_tt=case_data_matrix[tt,]
+  # c_local_val=case_localDiff; c_val=caseDiff; rep_val=repDiff; 
 
+  # Gather data
+  local_case_data_tt <- data_list$local_case_data_onset[tt]
+  local_case_data_conf_tt <- data_list$local_case_data_conf[tt]
+  case_data_tt <- data_list$int_case_onset[tt]
+  rep_data_tt <- data_list$int_case_conf[tt,]
+  
+  # Gather variables
+  case_localDiff <- storeL[,tt,"cases_local"] - storeL[,tt-1,"cases_local"]
+  rep_local <- storeL[,tt,"reports_local"]
+  caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
+  repDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
+  c_local_val <- pmax(0,case_localDiff); c_val <- pmax(0,caseDiff); rep_val <- pmax(0,repDiff) # NOTE CHECK FOR POSITIVITY
+  r_local_rep_cum <- rep_local
+  
   # Local confirmed cases (by onset)
+  
   if(!is.na(local_case_data_tt)){
-    loglikSum_local_onset <- dpois(local_case_data_tt,lambda = c_local_val*theta[["local_rep_prop"]],log=T)
+    expected_val <- c_local_val*theta[["onset_prop"]]*theta[["local_rep_prop"]] # scale by reporting proportion and known onsets
+    loglikSum_local_onset <- dpois(local_case_data_tt,lambda = expected_val,log=T)
   }else{
     loglikSum_local_onset <- 0
   }
+  
+  # Local confirmed cases (by confirmation) -- HOLD OUT FOR NOW AS LIKELIHOOD LOW
+  
+  # if(!is.na(local_case_data_conf_tt)){
+  #   expected_val <- r_local_rep_cum*theta[["local_rep_prop"]] # scale by reporting proportion and known onsets
+  #   loglikSum_local_conf <- dpois(local_case_data_conf_tt,lambda = r_local_rep_cum,log=T)
+  # }else{
+  #   loglikSum_local_conf <- 0
+  # }
   
   # - - - 
   # International confirmed cases (by country)
@@ -209,7 +239,7 @@ AssignWeights <- function(c_local_val,c_val,rep_val,local_case_data_tt,case_data
   
   # - - - 
   # International onsets (total)
-  if(!is.na(local_case_data_tt)){
+  if(!is.na(case_data_tt)){
     x_scaled <- c_val
     x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
     x_lam <- rowSums(x_expected)
@@ -224,7 +254,7 @@ AssignWeights <- function(c_local_val,c_val,rep_val,local_case_data_tt,case_data
     
   # - - -  
   # Tally up likelihoods
-  loglikSum <- loglikSum_local_onset  + loglikSum_inf_onset #+ loglikSum_int_conf
+  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset + loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
   
 }
@@ -308,18 +338,19 @@ simple_sim <- function(){
 
 MLE_check <- function(){
   
-  beta_tab <- seq(0.01,1,0.01)
+  #   theta_tab <- seq(100,200,10)
+  theta_tab <- seq(0.1,1,0.1)
   store_lik <- NULL
     
-  for(ii in 1:length(beta_tab)){
+  for(ii in 1:length(theta_tab)){
     
-    theta[["betavol"]] <- beta_tab[ii]
+    theta[["beta_vol"]] <- 1/theta_tab[ii]
     
     # Run SMC and output likelihooda
     output_smc <- smc_model(theta,
                             nn=1e3 # number of particles
     )
-    store_lik <- rbind(store_lik,c(theta[["betavol"]],output_smc$lik))
+    store_lik <- rbind(store_lik,c(theta_tab[ii],output_smc$lik))
     
   }
 

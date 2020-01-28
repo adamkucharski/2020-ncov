@@ -32,6 +32,7 @@ international_conf_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_da
 international_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_WHO_report.csv"))
 china_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_data_bioRvix_Liu_et_al.csv"))
 wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_data_lancet_huang_et_al.csv"))
+wuhan_conf_data_in <- read_csv(paste0(dropbox_path,"data_sources/case_data/time_series_HKU_Wuhan.csv"))
 
 # - - -
 # Load model and plotting functions
@@ -48,29 +49,27 @@ source("R/load_timeseries_data.R",local=TRUE)
 # - - -
 # Load model parameters
 thetaR_IC <- read_csv("inputs/theta_initial_conditions.csv")
-theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]),
+theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this is only IC - SMC estimates this
             beta=NA,
             betavol=as.numeric(thetaR_IC[thetaR_IC$param=="betavol","value"]),
             gentime=as.numeric(thetaR_IC[thetaR_IC$param=="gentime","value"]), # not used currently
             incubation = 1/as.numeric(thetaR_IC[thetaR_IC$param=="incubation","value"]),
             report = 1/as.numeric(thetaR_IC[thetaR_IC$param=="report","value"]),
+            report_local = 1/as.numeric(thetaR_IC[thetaR_IC$param=="report_local","value"]),
             recover = 1/as.numeric(thetaR_IC[thetaR_IC$param=="recover","value"]),
             init_cases=as.numeric(thetaR_IC[thetaR_IC$param=="init_cases","value"])/2,
             passengers=as.numeric(thetaR_IC[thetaR_IC$param=="outbound_travel","value"]),
             pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]),
             local_rep_prop=1/as.numeric(thetaR_IC[thetaR_IC$param=="local_rep_prop","value"]), # local propn reported
+            onset_prop=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop","value"]), # propn onsets known
             travel_frac=NA
             )
 
-theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]]
+theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]] # Estimate fraction that travel
 
-# - - -
-# Pick ICs for random walk
-theta[["r0"]] <- 3
-theta[["betavol"]] <- 0.3
-theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]])
+theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]) # Scale initial value of R0
 
-theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","cases","reports","cases_local") # also defines groups to use in model
+theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","cases","reports","cases_local","reports_local") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
@@ -84,7 +83,7 @@ output_smc$lik
 
 # - - -
 # Run multiple SMC and output plots
-plot_outputs(rep_plot=100, # number of repeats
+plot_outputs(rep_plot=150, # number of repeats
              nn=1e3, #number of particles
              cut_off = 0 #max(0,as.numeric(end_date - wuhan_travel_restrictions)) # omit final X days for R calculations?
              )

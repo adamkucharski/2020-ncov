@@ -3,7 +3,7 @@
 
 
 # Define values
-omit_recent <- 3
+omit_recent <- 4
 start_date <- as.Date("2019-11-15")
 end_date <- max(case_data_in$date) # omit recent day?
 date_range <- seq(start_date,end_date,1)
@@ -50,12 +50,10 @@ case_data_onset[case_data_onset$date>cutoff_time_int_onsets,"number"] <- NA
 case_data_onset_time <- rep(0,length(date_range))
 
 for(ii in 1:length(date_range)){
-  if(date_range[ii]<=cutoff_time_int_onsets){
     case_data_onset_time[ii] <- sum(case_data_onset[case_data_onset$date==date_range[ii],]$number)
-  }else{
-    case_data_onset_time[ii] <- NA
-  }
 }
+
+case_data_onset_time[date_range>cutoff_time_int_onsets] <- NA # omit final points
 
 
 # Load China onset data --------------------------------------------
@@ -67,12 +65,9 @@ case_data_china_time <- rep(0,length(date_range))
 
 # ensure final points are omitted
 for(ii in 1:length(date_range)){
-  if(date_range[ii]<=cutoff_time_china){
-    case_data_china_time[ii] <- sum(case_data_china[case_data_china$date==date_range[ii],]$number)
-  }else{
-    case_data_china_time[ii] <- NA
-  }
+  case_data_china_time[ii] <- sum(case_data_china[case_data_china$date==date_range[ii],]$number)
 }
+case_data_china_time[date_range>cutoff_time_china] <- NA # omit final points
 
 # Load Wuhan early data --------------------------------------------
 
@@ -91,6 +86,28 @@ for(ii in 1:length(date_range)){
 # INITIAL APPROXIMATION -  ADD TOGETHER CHINA TIMESERIES
 
 case_data_china_time <- case_data_china_time + case_data_wuhan_time
+
+# Load Wuhan confirmed data --------------------------------------------
+
+case_data_wuhan_conf <- wuhan_conf_data_in
+case_data_wuhan_conf_time <- rep(0,length(date_range))
+cutoff_time_wuhan <- max(case_data_wuhan_conf$date)
+
+for(ii in 1:length(date_range)){
+  case_data_wuhan_conf_time[ii] = sum(case_data_wuhan_conf[case_data_wuhan_conf$date==date_range[ii],]$number)
+}
+
+case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but single point
+
+# Compile list of data to use:
+
+
+data_list = list(local_case_data_onset = case_data_china_time, 
+                 local_case_data_conf = case_data_wuhan_conf_time,
+                 int_case_onset = case_data_onset_time,
+                 int_case_conf = case_data_matrix)
+
+#data_list = list(local_case_data_tt=case_data_china_time[tt],case_data_tt=case_data_onset_time[tt],rep_data_tt=case_data_matrix[tt,])
 
 
 
