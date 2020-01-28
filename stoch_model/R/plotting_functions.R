@@ -128,7 +128,7 @@ plot_outputs <- function(){
   text(labels="model estimate",x=xMin1,y=0.9*30,adj=0,col="blue")
   text(labels="fitted data",x=xMin1,y=0.8*30,adj=0,col="black")
   
-  points(case_data_wuhan$date,case_data_wuhan$number,pch=2)
+  points(case_data_wuhan$date,case_data_wuhan$number,pch=17)
   points(case_data_china$date,case_data_china$number,pch=19)
   
   title(LETTERS[letR],adj=0); letR = letR +1
