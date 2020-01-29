@@ -12,8 +12,12 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
 
   infectious_t1 <- simTab[,"inf1"] # input function
   infectious_t2 <- simTab[,"inf2"] # input function
+  
+  tr_waiting_t <- simTab[,"tr_waiting"] # input function
   cases_t <- simTab[,"cases"] # input function
   reports_t <- simTab[,"reports"] # input function
+  
+  waiting_local_t <- simTab[,"waiting_local"] # input function
   cases_local_t <- simTab[,"cases_local"] # input function
   reports_local_t <- simTab[,"reports_local"] # input function
 
@@ -29,15 +33,21 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
 
     # transitions
     S_to_E1 <- susceptible_t*(infectious_t1+infectious_t2)*inf_rate # stochastic transmission
+
+    # Delay until symptoms
     E1_to_E2 <- exposed_t1*inc_rate # as two compartments
     E2_to_I1 <- exposed_t2*inc_rate
+    
     E1_to_E2_tr <- tr_exposed_t1*inc_rate # as two compartments
     E2_to_I1_tr <- tr_exposed_t2*inc_rate
 
+    # Delay until recovery
     I1_to_I2 <- infectious_t1*rec_rate
     I2_to_R <- infectious_t2*rec_rate
-    C_to_Rep <- cases_t*rep_rate
-    C_to_Rep_local <- cases_local_t*rep_rate_local
+    
+    # Delay until reported
+    W_to_Rep <- tr_waiting_t*rep_rate
+    W_to_Rep_local <- waiting_local_t*rep_rate_local
 
     # Process model for SEIR
     susceptible_t <- susceptible_t - S_to_E1
@@ -50,11 +60,13 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
     infectious_t2 <- infectious_t2 + I1_to_I2 - I2_to_R
 
     # Case tracking
+    waiting_local_t <- waiting_local_t + E2_to_I1 - W_to_Rep_local
     cases_local_t <- cases_local_t + E2_to_I1
-    reports_local_t <- reports_local_t + C_to_Rep_local
+    reports_local_t <- reports_local_t + W_to_Rep_local
 
+    tr_waiting_t <- tr_waiting_t + E2_to_I1_tr - W_to_Rep
     cases_t <- cases_t + E2_to_I1_tr
-    reports_t <- reports_t + C_to_Rep
+    reports_t <- reports_t + W_to_Rep
   }
 
   simTab[,"sus"] <- susceptible_t # output
@@ -64,7 +76,10 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   simTab[,"tr_exp2"] <- tr_exposed_t2 # output
   simTab[,"inf1"] <- infectious_t1 # output
   simTab[,"inf2"] <- infectious_t2 # output
+  
+  simTab[,"tr_waiting"] <- tr_waiting_t # output
   simTab[,"cases"] <- cases_t # output
+  simTab[,"waiting_local"] <- waiting_local_t # output
   simTab[,"reports"] <- reports_t # output
   simTab[,"cases_local"] <- cases_local_t # output
   simTab[,"reports_local"] <- reports_local_t # output
@@ -77,7 +92,7 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
 
 smc_model <- function(theta,nn,dt=1){
 
-  # nn = 100;   dt <- 1
+  # nn = 100;   dt <- 0.25
 
   # Assumptions - using daily growth rate
   ttotal <- t_period
@@ -88,8 +103,8 @@ smc_model <- function(theta,nn,dt=1){
   # Add initial condition
   #storeL[,1,"exp1"] <- theta[["init_cases"]]
   #storeL[,1,"exp2"] <- theta[["init_cases"]]
-  #storeL[,1,"inf1"] <- theta[["init_cases"]]
-  storeL[,1,"inf2"] <- theta[["init_cases"]]
+  storeL[,1,"inf1"] <- theta[["init_cases"]]
+  #storeL[,1,"inf2"] <- theta[["init_cases"]]
   storeL[,1,"sus"] <- theta[["pop_travel"]] - 4*theta[["init_cases"]]
 
   #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
@@ -175,6 +190,8 @@ smc_model <- function(theta,nn,dt=1){
     I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
     beta_traj[ii-1,] <- simzeta[ii-1,l_sample[ii-1]]
   }
+  
+  # DEBUG  plot(Rep_traj[,1]-C_traj[,1])
 
 
   return(list(S_trace=S_traj,C_local_trace=C_local_traj,Rep_local_trace=Rep_local_traj,C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
@@ -200,7 +217,9 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   rep_local <- storeL[,tt,"reports_local"]
   caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
   repDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
-  c_local_val <- pmax(0,case_localDiff); c_val <- pmax(0,caseDiff); rep_val <- pmax(0,repDiff) # NOTE CHECK FOR POSITIVITY
+  c_local_val <- pmax(0,case_localDiff)
+  c_val <- pmax(0,caseDiff)
+  rep_val <- pmax(0,repDiff) # NOTE CHECK FOR POSITIVITY
   r_local_rep_cum <- rep_local
 
   # Local confirmed cases (by onset)
@@ -254,7 +273,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # - - -
   # Tally up likelihoods
-  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset + loglikSum_int_conf #+ loglikSum_local_conf
+  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }

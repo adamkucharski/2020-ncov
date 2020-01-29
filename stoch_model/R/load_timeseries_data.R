@@ -1,9 +1,7 @@
 # Timeseries data
 
-
-
 # Define values
-omit_recent <- 2
+omit_recent <- 4
 start_date <- as.Date("2019-11-15")
 end_date <- max(case_data_in$date) # omit recent day?
 date_range <- seq(start_date,end_date,1)

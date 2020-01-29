@@ -1,6 +1,6 @@
 # 2020-ncov
 
-Analysis of the 2020 nCoV outbreak.
+Analysis of the 2020 nCoV outbreak. _Note: this is working repository, so code and data are likely to change over time_
 
 ### Guide to files for `stoch_model`
 

@@ -67,9 +67,10 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
 
 theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]] # Estimate fraction that travel
 
+theta[["betavol"]] <- 0.5
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]) # Scale initial value of R0
 
-theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","cases","reports","cases_local","reports_local") # also defines groups to use in model
+theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","tr_waiting","cases","reports","waiting_local","cases_local","reports_local") # also defines groups to use in model
 
 
 # Run models --------------------------------------------------------------
@@ -84,7 +85,7 @@ output_smc$lik
 
 # - - -
 # Run multiple SMC and output plots
-run_fits(rep_plot=100, # number of repeats
+run_fits(rep_plot=50, # number of repeats
          nn=1e3,#number of particles
          dt=0.25
              )

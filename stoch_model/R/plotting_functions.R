@@ -20,6 +20,7 @@ run_fits <- function(rep_plot,nn,cut_off,dt){
     C_local_plot[,kk] <- rpois(length(case_local_pos),lambda=case_local_pos)
     rep_local_pos <- theta[["local_rep_prop"]]*(output_smc$Rep_local_trace - c(0,head(output_smc$Rep_local_trace,-1)))
     Rep_local_plot[,kk] <- rpois(length(rep_local_pos),lambda=rep_local_pos)
+    
     C_plot[,kk] <- fit_int_cases(output_smc$C_trace - c(0,head(output_smc$C_trace,-1)))
     Rep_plot[,kk] <- fit_int_cases(output_smc$Rep_trace - c(0,head(output_smc$Rep_trace,-1))) # case difference
     R0_plot[,kk] <- output_smc$beta_trace/(theta[["recover"]])
@@ -194,6 +195,8 @@ fit_int_cases <- function(x_val){
   x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
   x_lambda <- rowSums(x_expected)
   #x_lambda
-  rpois(length(x_lambda),lambda=x_lambda)
+  #rpois(length(x_lambda),lambda=x_lambda)
+  
+  x_lambda
 
 }
