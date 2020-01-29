@@ -1,3 +1,15 @@
+# Helper functions --------------------------------------------
+
+c.text<-function(x,sigF=3){
+  bp1=signif(c(median(x),quantile(x,0.025),quantile(x,0.975)),sigF)
+  paste(bp1[1]," (",bp1[2],"-",bp1[3],")",sep="")
+}
+
+c.nume<-function(x){
+  bp1=c(median(x),quantile(x,0.025),quantile(x,0.975))
+  as.numeric(bp1)
+}
+
 # Run SMC to get bootstrap estimates --------------------------------------------
 
 run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
@@ -179,7 +191,77 @@ plot_outputs <- function(filename="1"){
   
 }
 
-# Plot outputs from SMC --------------------------------------------
+# Plot dispersion --------------------------------------------
+
+plot_dispersion <- function(filename="1"){
+  
+  # filename="1"
+  
+  load(paste0("outputs/bootstrap_fit_",filename,".RData"))
+  
+  # Extract R credible interval
+  period_interest <- as.Date(c("2020-01-10","2020-01-14"))
+  
+  par(mfrow=c(1,2),mar=c(3,3,1,1),mgp=c(2,0.7,0))
+  
+  for(ii in 1:2){
+    
+    index_pick <- match(period_interest,date_range)
+    R0_all <- R0_plot[index_pick[ii],]
+    dim(R0_all) <- NULL # collapse data
+    
+    R0_CrI <- quantile(R0_all,c(0.025,0.25,0.5,0.75,0.975))
+    
+    MERS_k <- 0.26
+    SARS_k <- 0.16
+    k_seq <- seq(0.01,0.5,0.01)
+  
+    # Outbreak calcs
+    R0_med <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[3],x)})
+    R0_CrI_1 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[1],x)})
+    R0_CrI_2 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[5],x)})
+    R0_CrI_1_50 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[2],x)})
+    R0_CrI_2_50 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[4],x)})
+    
+    # Plot results
+    plot(k_seq,R0_med,type="l",ylim=c(0,1),xlab=c("extent of homogeneity in transmission (k)"),ylab="probability of large outbreak",col="white",xaxs="i",yaxs="i")
+    polygon(c(k_seq,rev(k_seq)),c(R0_CrI_1,rev(R0_CrI_2)),lty=0,col=rgb(0,0.3,1,0.35))
+    polygon(c(k_seq,rev(k_seq)),c(R0_CrI_1_50,rev(R0_CrI_2_50)),lty=0,col=rgb(0,0.3,1,0.35))
+    lines(k_seq,R0_med,col="blue")
+    
+    lines(c(MERS_k,MERS_k),c(-1,10),lty=2); text(labels="MERS-CoV",x=1.02*MERS_k,y=0.7,adj=0,col="black")
+    lines(c(SARS_k,SARS_k),c(-1,10),lty=2); text(labels="SARS",x=1.02*SARS_k,y=0.6,adj=0,col="black")
+    title(LETTERS[ii],adj=0)
+
+  }
+  
+  
+  dev.copy(png,paste("plots/calc_1.png",sep=""),units="cm",width=20,height=10,res=150)
+  dev.off()
+  
+  
+}
+
+# Output R0 estimates over time --------------------------------------------
+
+r0_value_output <- function(filename="1"){
+  
+  # filename="1"
+  
+  load(paste0("outputs/bootstrap_fit_",filename,".RData"))
+
+  
+  period_interest <- as.Date("2020-01-01","")
+  
+  match(period_interest,date_range)
+  
+  R0_plot #TO DO
+  
+
+  
+}
+
+# Exporter case scaling function --------------------------------------------
 
 fit_int_cases <- function(x_val){
   

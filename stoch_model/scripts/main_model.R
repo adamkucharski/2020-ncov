@@ -10,6 +10,7 @@ library(lubridate)
 library(magrittr)
 library(coda)
 library(tidyverse)
+library(rootSolve)
   
 registerDoMC(4)  #change the 2 to your number of CPU cores
 

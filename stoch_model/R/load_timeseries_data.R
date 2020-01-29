@@ -1,7 +1,7 @@
 # Timeseries data
 
 # Define values
-omit_recent <- 1
+omit_recent <- 5
 omit_conf <- 0
 
 start_date <- as.Date("2019-11-15")
