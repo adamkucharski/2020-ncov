@@ -28,7 +28,7 @@ To understand how human-to-human transmission varied in Wuhan during the early s
 
 ## Key results
 
-• **We estimated that R0 had likely been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R0 was above 2 in early January**. We also found evidence of a decline in the reproduction number after a peak in early January.
+• **We estimated that R0 had likely been fluctuating between 1.5-4 prior to travel restrictions being introduced on 23rd Jan, and found strong evidence R0 was above 1 in mid-January**. We also found evidence of a decline in the reproduction number after a peak in mid-January.
 
 • Our model suggests that **exported cases linked to Wuhan will continue to be observed in the coming days, but gradually decline**. We have growing uncertainty in our estimates after 23rd Jan because the signal from international cases gets weaker after travel restrictions were introduced.
 
@@ -38,8 +38,6 @@ knitr::include_graphics("../plots/cases_inference_1.png")
 ```
 
 ## Discussion, caveats and ongoing work
-
-• The estimated peak in R0 in early Jan (Figure 1B) is the risk of a sudden rise in cases around 16th January both in Wuhan (Figure 1C) and internationally (Figure 1F).
 
 • We used biological parameters from current papers, but these may change as we get better data. We also made assumptions about the proportion of people who travel following the methods in the [J-IDEA reports](https://www.imperial.ac.uk/mrc-global-infectious-disease-analysis/news--wuhan-coronavirus/). However, jointly fitting to multiple datasets will reduce the influence that one single dataset has on results.
 
