@@ -1,7 +1,9 @@
 # Timeseries data
 
 # Define values
-omit_recent <- 4
+omit_recent <- 1
+omit_conf <- 0
+
 start_date <- as.Date("2019-11-15")
 end_date <- max(case_data_in$date) # omit recent day?
 date_range <- seq(start_date,end_date,1)
@@ -12,8 +14,9 @@ wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
 
 # Load international confirmation data --------------------------------------------
-
 case_data <- case_data_in
+cutoff_case_int <- max(case_data$date) - omit_conf # omit final days of time points
+
 case_data$export_probability <- as.numeric(travel_data[match(case_data$country,travel_data$label),]$risk) # Add risk
 case_data <- case_data[!is.na(case_data$export_probability),] # Only use available data
 
@@ -24,12 +27,14 @@ for(ii in 1:length(date_range)){
   case_time[ii] = sum(case_data[case_data$date==date_range[ii],]$number)
 }
 
+case_time[date_range>cutoff_case_int] <- NA # NOTE not used
+
 # shift data into weeks
 t_period <- as.numeric(end_date-start_date)+1
 case_data <- case_data %>% mutate(time = as.numeric(date - start_date + 1))
 
 # compile matrix of cases in top 30 risk locations
-n_risk <- 30
+n_risk <- 20
 top_risk <- travel_data[1:n_risk,]
 
 # Calculate exports by country

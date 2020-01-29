@@ -128,6 +128,8 @@ smc_model <- function(theta,nn,dt=1){
   # Iterate through steps
 
   for(tt in 2:ttotal){
+    
+    # DEBUG  tt=2
 
     # Add random walk on transmission ?
     simzeta[tt,] <- simzeta[tt-1,]*exp(simzeta[tt,])
@@ -161,6 +163,7 @@ smc_model <- function(theta,nn,dt=1){
 
 
   } # END PARTICLE LOOP
+  
 
   # Estimate likelihood:
   for(tt in 1:ttotal){
@@ -355,15 +358,14 @@ simple_sim <- function(){
 
 }
 
-MLE_check <- function(){
+MLE_check <- function(p_name = "local_rep_prop", theta_tab,nn=1e3){
 
-  #   theta_tab <- seq(100,200,10)
-  theta_tab <- seq(0.1,1,0.1)
+  # theta_tab <- seq(0.001,0.01,0.001)
   store_lik <- NULL
 
   for(ii in 1:length(theta_tab)){
 
-    theta[["beta"]] <- theta_tab[ii]
+    theta[[p_name]] <- theta_tab[ii]
 
     # Run SMC and output likelihooda
     output_smc <- smc_model(theta,
@@ -372,8 +374,9 @@ MLE_check <- function(){
     store_lik <- rbind(store_lik,c(theta_tab[ii],output_smc$lik))
 
   }
-
-  store_lik
+  
+  colnames(store_lik) <- c("param","lik")
+  store_lik <- as_tibble(store_lik)
 
 }
 
