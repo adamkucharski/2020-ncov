@@ -1,6 +1,7 @@
 # Timeseries data
 
 # Define values
+pre_peak <- 2
 omit_recent <- 5
 omit_conf <- 0
 
@@ -109,13 +110,13 @@ for(ii in 1:length(date_range)){
 }
 
 # EDIT TO FIT DIFFERENT TIMESERIES
-case_data_wuhan_2_time[(which(case_data_wuhan_2_time==max(case_data_wuhan_2_time))+2):length(date_range)] <- NA # only look at up to peak: 
+case_data_wuhan_2_time[(which(case_data_wuhan_2_time==max(case_data_wuhan_2_time))+pre_peak):length(date_range)] <- NA # only look at up to peak: 
 #case_data_wuhan_2_time[date_range>final_time_wuhan_2] <- NA # put NA at end of timeseries
 
 
 # Create scaling vector for reporting lag
 case_data_wuhan_2_scale <- rep(0,length(date_range))
-case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range +1)*theta[["report"]])
+case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range + pre_peak)*theta[["report"]])
 
 
 # Load Wuhan confirmed data --------------------------------------------

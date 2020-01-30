@@ -55,7 +55,7 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
   
 plot_outputs <- function(filename="1"){
   
-  cut_off <- 0
+  cut_off <- end_date - as.Date("2020-01-23")
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
   
@@ -81,6 +81,7 @@ plot_outputs <- function(filename="1"){
   Inf_quantileA <- Inf_quantile[,1:(ncol(R0_quantile)-cut_off)]
   R0_quantileA <- R0_quantile[,1:(ncol(R0_quantile)-cut_off)]
   date_rangeA <- date_range[1:(length(date_range)-cut_off)]
+  Case_local_quantile_onsetA <- Case_local_quantile_onset[,1:(length(date_range)-cut_off)]
   
   # - - - - - - - 
   # Calculate daily incidence
@@ -99,10 +100,10 @@ plot_outputs <- function(filename="1"){
 
   # Plot local cases onsets
   ym1 <- 120
-  plot(date_range,Case_local_quantile_onset[1,],col="white",ylim=c(0,ym1),xlim=c(xMin1,xMax),xlab="",ylab="new onsets in Wuhan")
-  polygon(c(date_range,rev(date_range)),c(Case_local_quantile_onset[2,],rev(Case_local_quantile_onset[4,])),lty=0,col=rgb(0,0.3,1,0.35))
-  polygon(c(date_range,rev(date_range)),c(Case_local_quantile_onset[1,],rev(Case_local_quantile_onset[5,])),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_range,Case_local_quantile_onset[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  plot(date_rangeA,Case_local_quantile_onsetA[1,],col="white",ylim=c(0,ym1),xlim=c(xMin1,xMax),xlab="",ylab="new onsets in Wuhan")
+  polygon(c(date_rangeA,rev(date_rangeA)),c(Case_local_quantile_onsetA[2,],rev(Case_local_quantile_onsetA[4,])),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_rangeA,rev(date_rangeA)),c(Case_local_quantile_onsetA[1,],rev(Case_local_quantile_onsetA[5,])),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_rangeA,Case_local_quantile_onsetA[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   text(labels="travel restrictions",x=wuhan_travel_restrictions-0.5,y=0.9*ym1,adj=1,col="red")

@@ -216,8 +216,8 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   rep_data_tt <- data_list$int_case_conf[tt,]
   
   # Scale for reporting lag
-  case_data_tt_scale <- 1#data_list$int_case_onset_scale[tt]
-  local_case_data_tt_scale <- 1#data_list$local_case_data_onset_scale[tt]
+  case_data_tt_scale <- 1#data_list$int_case_onset_scale[tt] # deprecated
+  local_case_data_tt_scale <- 1#data_list$local_case_data_onset_scale[tt] # deprecated
 
   # Gather variables
   case_localDiff <- storeL[,tt,"cases_local"] - storeL[,tt-1,"cases_local"]
