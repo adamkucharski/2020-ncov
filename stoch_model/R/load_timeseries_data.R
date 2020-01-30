@@ -12,6 +12,9 @@ date_range <- seq(start_date,end_date,1)
 wuhan_travel_restrictions <- as.Date("2020-01-23")
 wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
+# Only use top twenty exports
+n_risk <- 20
+travel_data <- travel_data[1:20,]
 
 # Load international confirmation data --------------------------------------------
 case_data <- case_data_in
@@ -34,7 +37,6 @@ t_period <- as.numeric(end_date-start_date)+1
 case_data <- case_data %>% mutate(time = as.numeric(date - start_date + 1))
 
 # compile matrix of cases in top 30 risk locations
-n_risk <- 20
 top_risk <- travel_data[1:n_risk,]
 
 # Calculate exports by country
@@ -45,7 +47,7 @@ for(ii in 1:nrow(case_data)){
 }
 
 # Load international onset data --------------------------------------------
-
+case_data_onset_report_date <- as.Date("2020-01-28")
 case_data_onset <- international_onset_data_in
 cutoff_time_int_onsets <- max(case_data_onset$date) - omit_recent # omit final days of time points
 
@@ -58,6 +60,8 @@ for(ii in 1:length(date_range)){
 
 case_data_onset_time[date_range>cutoff_time_int_onsets] <- NA # omit final points
 
+case_data_scale <- rep(0,length(date_range))
+case_data_scale <-1-exp(-pmax(0,case_data_onset_report_date - date_range + 1)*theta[["report"]])
 
 # Load China onset data --------------------------------------------
 
@@ -90,6 +94,30 @@ for(ii in 1:length(date_range)){
 
 case_data_china_time <- case_data_china_time + case_data_wuhan_time
 
+# Load Wuhan 2020-01-30 onset data --------------------------------------------
+
+
+case_data_wuhan_2 <- wuhan_onset_2020_01_30
+case_data_wuhan_2$number <- case_data_wuhan_2$number - case_data_wuhan_2$linked_to_market # remove market exposures
+final_time_wuhan_2 <- max(case_data_wuhan_2$date) # find latest data point
+
+case_data_wuhan_2_time <- rep(0,length(date_range))
+
+# ensure final points are omitted
+for(ii in 1:length(date_range)){
+  case_data_wuhan_2_time[ii] <- sum(case_data_wuhan_2[case_data_wuhan_2$date==date_range[ii],]$number)
+}
+
+# EDIT TO FIT DIFFERENT TIMESERIES
+case_data_wuhan_2_time[(which(case_data_wuhan_2_time==max(case_data_wuhan_2_time))+2):length(date_range)] <- NA # only look at up to peak: 
+#case_data_wuhan_2_time[date_range>final_time_wuhan_2] <- NA # put NA at end of timeseries
+
+
+# Create scaling vector for reporting lag
+case_data_wuhan_2_scale <- rep(0,length(date_range))
+case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range +1)*theta[["report"]])
+
+
 # Load Wuhan confirmed data --------------------------------------------
 
 case_data_wuhan_conf <- wuhan_conf_data_in
@@ -105,10 +133,12 @@ case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but sin
 # Compile list of data to use:
 
 
-data_list = list(local_case_data_onset = case_data_china_time, 
+data_list = list(local_case_data_onset = case_data_wuhan_2_time, #case_data_china_time,  # case_data_wuhan_2_time
                  local_case_data_conf = case_data_wuhan_conf_time,
                  int_case_onset = case_data_onset_time,
-                 int_case_conf = case_data_matrix)
+                 int_case_conf = case_data_matrix,
+                 int_case_onset_scale = case_data_scale,
+                 local_case_data_onset_scale = case_data_wuhan_2_scale)
 
 #data_list = list(local_case_data_tt=case_data_china_time[tt],case_data_tt=case_data_onset_time[tt],rep_data_tt=case_data_matrix[tt,])
 

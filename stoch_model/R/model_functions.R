@@ -103,9 +103,9 @@ smc_model <- function(theta,nn,dt=1){
   # Add initial condition
   #storeL[,1,"exp1"] <- theta[["init_cases"]]
   #storeL[,1,"exp2"] <- theta[["init_cases"]]
-  storeL[,1,"inf1"] <- theta[["init_cases"]]
-  #storeL[,1,"inf2"] <- theta[["init_cases"]]
-  storeL[,1,"sus"] <- theta[["pop_travel"]] - 4*theta[["init_cases"]]
+  storeL[,1,"inf1"] <- theta[["init_cases"]]/2
+  storeL[,1,"inf2"] <- theta[["init_cases"]]/2
+  storeL[,1,"sus"] <- theta[["pop_travel"]] - theta[["init_cases"]]
 
   #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
   simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
@@ -214,6 +214,10 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   local_case_data_conf_tt <- data_list$local_case_data_conf[tt]
   case_data_tt <- data_list$int_case_onset[tt]
   rep_data_tt <- data_list$int_case_conf[tt,]
+  
+  # Scale for reporting lag
+  case_data_tt_scale <- 1#data_list$int_case_onset_scale[tt]
+  local_case_data_tt_scale <- 1#data_list$local_case_data_onset_scale[tt]
 
   # Gather variables
   case_localDiff <- storeL[,tt,"cases_local"] - storeL[,tt-1,"cases_local"]
@@ -228,7 +232,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   # Local confirmed cases (by onset)
 
   if(!is.na(local_case_data_tt)){
-    expected_val <- c_local_val*theta[["onset_prop"]]*theta[["local_rep_prop"]] # scale by reporting proportion and known onsets
+    expected_val <- c_local_val*theta[["onset_prop"]]*theta[["local_rep_prop"]]*local_case_data_tt_scale # scale by reporting proportion and known onsets
     loglikSum_local_onset <- dpois(local_case_data_tt,lambda = expected_val,log=T)
   }else{
     loglikSum_local_onset <- 0

@@ -4,8 +4,8 @@
 
 # - - -
 # Run bootstrap SMC 
-run_fits(rep_plot=200, # number of repeats
-         nn=2e3,#number of particles
+run_fits(rep_plot=20, # number of repeats
+         nn=500,#number of particles
          dt=0.25,
          filename="1"
 )

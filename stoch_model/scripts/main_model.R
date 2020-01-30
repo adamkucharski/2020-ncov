@@ -32,19 +32,15 @@ international_conf_data_in <- read_csv(paste0(dropbox_path,"data/international_c
 international_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_WHO_report.csv"))
 china_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_bioRvix_Liu_et_al.csv"))
 wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_lancet_huang_et_al.csv"))
+wuhan_onset_2020_01_30 <- read_csv(paste0(dropbox_path,"data/time_series_data_qui_li_nejm_wuhan.csv"))
 wuhan_conf_data_in <- read_csv(paste0(dropbox_path,"data/time_series_HKU_Wuhan.csv"))
+case_data_in <- international_conf_data_in
+travel_data <- travel_data_mobs
 
 # - - -
 # Load model and plotting functions
 source("R/model_functions.R")
 source("R/plotting_functions.R")
-
-# - - -
-# Load timeseries -  specify travel data being used
-case_data_in <- international_conf_data_in
-travel_data <- travel_data_mobs
-
-source("R/load_timeseries_data.R",local=TRUE)
 
 # - - -
 # Load model parameters
@@ -63,9 +59,7 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
             local_rep_prop=as.numeric(thetaR_IC[thetaR_IC$param=="local_rep_prop","value"]), # local propn reported
             onset_prop=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop","value"]), # propn onsets known
             travel_frac=NA
-            )
-
-theta[["local_rep_prop"]] <- 0.01
+)
 
 #222.0734
 
@@ -75,6 +69,13 @@ theta[["betavol"]] <- 0.5
 theta[["beta"]] <- theta[["r0"]]*(theta[["recover"]]) # Scale initial value of R0
 
 theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","tr_waiting","cases","reports","waiting_local","cases_local","reports_local") # also defines groups to use in model
+
+
+# - - -
+# Load timeseries -  specify travel data being used
+# NOTE: USES REPORTING DELAY AS INPUT
+source("R/load_timeseries_data.R",local=TRUE)
+
 
 
 # Run set up check --------------------------------------------------------------
