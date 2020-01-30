@@ -266,17 +266,17 @@ plot_dispersion <- function(filename="1"){
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
   
   # Extract R credible interval
-  period_interest <- as.Date(c("2020-01-10","2020-01-14"))
+  period_interest <- as.Date(c("2020-01-01","2020-01-14"))
   
   par(mfrow=c(1,2),mar=c(3,3,1,1),mgp=c(2,0.7,0))
   
-  for(ii in 1:2){
-    
     index_pick <- match(period_interest,date_range)
-    R0_all <- R0_plot[index_pick[ii],]
-    dim(R0_all) <- NULL # collapse data
+    R0_all <- R0_plot[index_pick[1]:index_pick[2],]
+    #dim(R0_all) <- NULL # collapse data
     
-    R0_CrI <- quantile(R0_all,c(0.025,0.25,0.5,0.75,0.975))
+    med_R0 <- apply(R0_all,2,function(x){quantile(x,0.5)})
+    
+    R0_CrI <- quantile(med_R0,c(0.025,0.25,0.5,0.75,0.975))
     
     MERS_k <- 0.26
     SARS_k <- 0.16
@@ -290,16 +290,32 @@ plot_dispersion <- function(filename="1"){
     R0_CrI_2_50 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[4],x)})
     
     # Plot results
-    plot(k_seq,R0_med,type="l",ylim=c(0,1),xlab=c("extent of homogeneity in transmission (k)"),ylab="probability of large outbreak",col="white",xaxs="i",yaxs="i")
+    plot(k_seq,R0_med,type="l",ylim=c(0,1),xlab=c("extent of homogeneity in transmission (k)"),ylab="probability of large outbreak with single case",col="white",xaxs="i",yaxs="i")
     polygon(c(k_seq,rev(k_seq)),c(R0_CrI_1,rev(R0_CrI_2)),lty=0,col=rgb(0,0.3,1,0.35))
     polygon(c(k_seq,rev(k_seq)),c(R0_CrI_1_50,rev(R0_CrI_2_50)),lty=0,col=rgb(0,0.3,1,0.35))
     lines(k_seq,R0_med,col="blue")
     
     lines(c(MERS_k,MERS_k),c(-1,10),lty=2); text(labels="MERS-CoV",x=1.02*MERS_k,y=0.7,adj=0,col="black")
     lines(c(SARS_k,SARS_k),c(-1,10),lty=2); text(labels="SARS",x=1.02*SARS_k,y=0.6,adj=0,col="black")
-    title(LETTERS[ii],adj=0)
+    title(LETTERS[1],adj=0)
+    
+    n_seq <- seq(0,10,1)
+    ext_m <- 1-(1-R0_med[k_seq==SARS_k])^n_seq
+    ext_1 <- 1-(1-R0_CrI_1[k_seq==SARS_k])^n_seq
+    ext_2 <- 1-(1-R0_CrI_2[k_seq==SARS_k])^n_seq
+    ext_11 <- 1-(1-R0_CrI_1_50[k_seq==SARS_k])^n_seq
+    ext_22 <- 1-(1-R0_CrI_2_50[k_seq==SARS_k])^n_seq
+    
+    plot(n_seq,ext_m,type="l",ylim=c(0,1),xlim=c(-0.5,10.5),xlab=c("number of introductions"),ylab="probability of large outbreak",col="white",xaxs="i",yaxs="i")
+    points(n_seq,ext_m,col="blue",pch=19)
+    for(ii in 1:length(n_seq)){
+      lines(c(n_seq[ii],n_seq[ii]),c(ext_1[ii],ext_2[ii]),col="blue")
+    }
+    
+    
+    title(LETTERS[2],adj=0)
 
-  }
+
   
   
   dev.copy(png,paste("plots/calc_1.png",sep=""),units="cm",width=20,height=10,res=150)
