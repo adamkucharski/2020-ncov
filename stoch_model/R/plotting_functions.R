@@ -99,7 +99,7 @@ plot_outputs <- function(filename="1"){
   # Plot outputs
 
   # Plot local cases onsets
-  ym1 <- 120
+  ym1 <- 60
   plot(date_rangeA,Case_local_quantile_onsetA[1,],col="white",ylim=c(0,ym1),xlim=c(xMin1,xMax),xlab="",ylab="new onsets in Wuhan")
   polygon(c(date_rangeA,rev(date_rangeA)),c(Case_local_quantile_onsetA[2,],rev(Case_local_quantile_onsetA[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_rangeA,rev(date_rangeA)),c(Case_local_quantile_onsetA[1,],rev(Case_local_quantile_onsetA[5,])),lty=0,col=rgb(0,0.3,1,0.2))
@@ -111,9 +111,9 @@ plot_outputs <- function(filename="1"){
   text(labels="model estimate",x=xMin1,y=0.9*ym1,adj=0,col="blue")
   text(labels="fitted data",x=xMin1,y=0.8*ym1,adj=0,col="black")
   
-  #points(case_data_wuhan$date,case_data_wuhan$number,pch=17)
-  #points(case_data_china$date,case_data_china$number,pch=18)
-  points(date_range,case_data_wuhan_2_time,pch=19)
+  points(case_data_wuhan$date,case_data_wuhan$number,pch=17)
+  points(case_data_china$date,case_data_china$number,pch=18)
+  #points(date_range,case_data_wuhan_2_time,pch=19)
   
   title(LETTERS[1],adj=0); letR = 2
   
@@ -150,7 +150,7 @@ plot_outputs <- function(filename="1"){
   
   # Plot international cases confirmed
   ym1 <- 10
-  plot(date_range,case_time,pch=19,ylim=c(0,ym1),xlim=c(xMin1,xMax),ylab="new international cases confirmed",col="white")
+  plot(date_range,case_time,pch=19,ylim=c(0,ym1),xlim=c(xMin1,xMax),ylab="new international exports confirmed",col="white")
   
   polygon(c(date_range,rev(date_range)),c(Rep_quantile[2,],rev(Rep_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_range,rev(date_range)),c(Rep_quantile[1,],rev(Rep_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
@@ -241,14 +241,14 @@ plot_international <- function(Rep_plot){
   #par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
   par(mar=c(3,3,1,1))
   
-  plot(x_expected,case_export_vector,col="white",ylim=c(0,6),xlim=c(0,6),xlab="expected international cases from Wuhan",ylab="confirmed international cases")
+  plot(x_expected,case_export_vector,col="white",ylim=c(0,6),xlim=c(0,6),xlab="expected international exports from Wuhan",ylab="confirmed international exports")
   lines(c(-10,10),c(-10,10),lty=2)
   points(x_expected,case_export_vector,pch=1,col="blue",cex=0.7)
-  text(labels="Australia",x=1,y=6,col="blue",adj=0)
+  text(labels="Australia",x=1.5,y=6,col="blue",adj=0)
   text(labels="USA",x=1.4,y=5,col="blue",adj=0)
   
-  text(labels="France",x=0.3,y=3,col="blue",adj=0)
-  text(labels="Thailand",x=3.2,y=4.4,col="blue",adj=0)
+  text(labels="France",x=0.4,y=3,col="blue",adj=0)
+  text(labels="Thailand",x=5.05,y=3.4,col="blue",adj=0)
   
   par(mar=c(2,3,1,1))
   

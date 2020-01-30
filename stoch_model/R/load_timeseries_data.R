@@ -1,7 +1,7 @@
 # Timeseries data
 
 # Define values
-pre_peak <- 2
+pre_peak <- 3 # -1 is 2 before peak, 2 is 2 after
 omit_recent <- 5
 omit_conf <- 0
 
@@ -134,7 +134,7 @@ case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but sin
 # Compile list of data to use:
 
 
-data_list = list(local_case_data_onset = case_data_wuhan_2_time, #case_data_china_time,  # case_data_wuhan_2_time
+data_list = list(local_case_data_onset = case_data_china_time, #case_data_china_time,  # case_data_wuhan_2_time
                  local_case_data_conf = case_data_wuhan_conf_time,
                  int_case_onset = case_data_onset_time,
                  int_case_conf = case_data_matrix,
