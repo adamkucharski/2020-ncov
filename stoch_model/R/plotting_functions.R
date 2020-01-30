@@ -55,6 +55,8 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
   
 plot_outputs <- function(filename="1"){
   
+  # filename="1"
+  
   cut_off <- end_date - as.Date("2020-01-23")
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
@@ -244,11 +246,11 @@ plot_international <- function(Rep_plot){
   plot(x_expected,case_export_vector,col="white",ylim=c(0,6),xlim=c(0,6),xlab="expected international exports from Wuhan",ylab="confirmed international exports")
   lines(c(-10,10),c(-10,10),lty=2)
   points(x_expected,case_export_vector,pch=1,col="blue",cex=0.7)
-  text(labels="Australia",x=1.5,y=6,col="blue",adj=0)
-  text(labels="USA",x=1.4,y=5,col="blue",adj=0)
+  text(labels="Australia",x=1.2,y=6,col="blue",adj=0)
+  text(labels="USA",x=1.6,y=5,col="blue",adj=0)
   
   text(labels="France",x=0.4,y=3,col="blue",adj=0)
-  text(labels="Thailand",x=5.05,y=3.4,col="blue",adj=0)
+  text(labels="Thailand",x=3.9,y=3.7,col="blue",adj=0)
   
   par(mar=c(2,3,1,1))
   
@@ -332,15 +334,13 @@ r0_value_output <- function(filename="1"){
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
 
+  period_interest <- as.Date("2020-01-01")
+
+  med_R0 <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.5,0.975))})
   
-  period_interest <- as.Date("2020-01-01","")
+  c.text(med_R0[,match(period_interest,date_range)])
   
-  match(period_interest,date_range)
-  
-  R0_plot
-  
-  # TO FINISH
-  
+  #file_out <- as_tibble(cbind(date_range,c.text(t(med_R0))))
 
   
 }
