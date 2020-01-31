@@ -5,7 +5,7 @@ pre_peak <- 3 # -1 is 2 before peak, 2 is 2 after
 omit_recent <- 5
 omit_conf <- 0
 
-start_date <- as.Date("2019-11-15")
+start_date <- as.Date("2019-11-22")
 end_date <- max(case_data_in$date) # omit recent day?
 date_range <- seq(start_date,end_date,1)
 

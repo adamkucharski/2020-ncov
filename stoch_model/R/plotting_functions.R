@@ -184,17 +184,21 @@ plot_outputs <- function(filename="1"){
 
   
   # Plot reproduction number
-  plot(date_rangeA,R0_quantileA[1,],col="white",ylim=c(0,10),xlim=c(xMin1,xMax),xlab="",ylab=expression(paste(R[t])))
   
-  polygon(c(date_rangeA,rev(date_rangeA)),c(R0_quantileA[2,],rev(R0_quantileA[4,])),lty=0,col=rgb(0,0.3,1,0.35))
-  polygon(c(date_rangeA,rev(date_rangeA)),c(R0_quantileA[1,],rev(R0_quantileA[5,])),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_rangeA,R0_quantileA[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
-  lines(date_rangeA,1+0*R0_quantileA[3,],lty=2)
+  date_rangeB <- date_rangeA[date_rangeA>as.Date("2019-12-15")]
+  R0_quantileB <- R0_quantileA[,date_rangeA>as.Date("2019-12-15")]
   
-  text(labels="model estimate",x=xMin1,y=9,adj=0,col="blue")
+  plot(date_rangeB,R0_quantileB[1,],col="white",ylim=c(0,10),xlim=c(min(date_rangeB),as.Date("2020-01-24")),xlab="",ylab=expression(paste(R[t])))
+  
+  polygon(c(date_rangeB,rev(date_rangeB)),c(R0_quantileB[2,],rev(R0_quantileB[4,])),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_rangeB,rev(date_rangeB)),c(R0_quantileB[1,],rev(R0_quantileB[5,])),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_rangeB,R0_quantileB[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  lines(date_rangeB,1+0*R0_quantileB[3,],lty=2)
+  
+  text(labels="model estimate",x=min(date_rangeB),y=9,adj=0,col="blue")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,10),col="red")
-  title(LETTERS[letR],adj=0); letR = letR + 
+  title(LETTERS[letR],adj=0); letR = letR + 1
     
   # output figure
   dev.copy(png,paste("plots/cases_inference.png",sep=""),units="cm",width=20,height=15,res=150)
@@ -268,7 +272,7 @@ plot_dispersion <- function(filename="1"){
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
   
   # Extract R credible interval
-  period_interest <- as.Date(c("2020-01-01","2020-01-14"))
+  period_interest <- as.Date(c("2020-01-01","2020-01-23"))
   
   par(mfrow=c(1,2),mar=c(3,3,1,1),mgp=c(2,0.7,0))
   
@@ -291,8 +295,11 @@ plot_dispersion <- function(filename="1"){
     R0_CrI_1_50 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[2],x)})
     R0_CrI_2_50 <- 1-sapply(k_seq,function(x){numerical_solver(R0_CrI[4],x)})
     
+    # Estimate range
+    c(R0_med[k_seq==SARS_k],R0_med[k_seq==MERS_k])
+    
     # Plot results
-    plot(k_seq,R0_med,type="l",ylim=c(0,1),xlab=c("extent of homogeneity in transmission (k)"),ylab="probability of large outbreak with single case",col="white",xaxs="i",yaxs="i")
+    plot(k_seq,R0_med,type="l",ylim=c(0,1),xlab=c("extent of homogeneity in transmission"),ylab="probability of large outbreak with single case",col="white",xaxs="i",yaxs="i")
     polygon(c(k_seq,rev(k_seq)),c(R0_CrI_1,rev(R0_CrI_2)),lty=0,col=rgb(0,0.3,1,0.35))
     polygon(c(k_seq,rev(k_seq)),c(R0_CrI_1_50,rev(R0_CrI_2_50)),lty=0,col=rgb(0,0.3,1,0.35))
     lines(k_seq,R0_med,col="blue")
@@ -333,14 +340,31 @@ r0_value_output <- function(filename="1"){
   # filename="1"
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
-
-  period_interest <- as.Date("2020-01-01")
-
-  med_R0 <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.5,0.975))})
   
-  c.text(med_R0[,match(period_interest,date_range)])
+  # Extract R0 estimates
+
+  period_interest <- as.Date("2020-15-01")
+
+  med_R0 <- apply(R0_plot,1,function(x){quantile(x,c(0.5))})
+  c.text(med_R0[match(period_interest,date_range)])
   
   #file_out <- as_tibble(cbind(date_range,c.text(t(med_R0))))
+  
+  # Median R0 range
+  period_interest <- as.Date(c("2019-12-15","2020-01-23"))
+  index_pick <- match(period_interest,date_range)
+  R0_all <- R0_plot[index_pick[1]:index_pick[2],]
+  
+  med_R0 <- apply(R0_all,1,function(x){quantile(x,c(0.5))})
+  
+  c.text(med_R0)
+  
+  # - - - 
+  # symptomatic cases in Wuhan
+  
+  period_interest <- as.Date("2020-01-23")
+  
+  c.text(I_plot[date_range==period_interest,])
 
   
 }
