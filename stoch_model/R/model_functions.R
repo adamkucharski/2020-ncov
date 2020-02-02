@@ -386,7 +386,7 @@ MLE_check <- function(p_name = "local_rep_prop", theta_tab,nn=1e3){
 
 numerical_solver <- function(r0, k){
 
-  fun <- function (s) (1 + (r0/k)*(1 - s))^(-k) - s
+  fun <- function (s) {(1 + (r0/k)*(1 - s))^(-k) - s}
   solutions <- rootSolve::multiroot(fun, c(0, 1))$root
 
   realistic_sol <- min(solutions)

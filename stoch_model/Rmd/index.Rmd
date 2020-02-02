@@ -11,7 +11,7 @@ date: '`r format(Sys.time(), "%d %B, %Y")`'
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-*Contributors: Adam Kucharski, Rosalind Eggo, Tim Russell, Charlie Diamond, and CMMID nCoV team.*
+*Contributors: Adam Kucharski, Tim Russell, Charlie Diamond, CMMID nCoV working group, Sebastian Funk, Rosalind Eggo.*
 *Note: this is preliminary analysis and has not yet been peer-reviewed.*
 
 ## Aim

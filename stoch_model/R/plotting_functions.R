@@ -380,6 +380,4 @@ fit_int_cases <- function(x_val){
   #x_lambda
   rpois(length(x_lambda),lambda=x_lambda)
   
-
-
 }

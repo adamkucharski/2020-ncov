@@ -1,2 +1,3 @@
 outputs/*.Rdata
 stoch_model/outputs/*.RData
+.Rproj.user
