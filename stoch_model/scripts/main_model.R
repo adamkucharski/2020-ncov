@@ -27,8 +27,8 @@ if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
 
 # - - -
 # Load datasets
-#travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_mobs.csv"))
-travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_worldpop.csv"))
+travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_mobs.csv"))
+#travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_worldpop.csv"))
 international_conf_data_in <- read_csv(paste0(dropbox_path,"data/international_case_data.csv"))
 international_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_WHO_report.csv"))
 china_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_bioRvix_Liu_et_al.csv"))

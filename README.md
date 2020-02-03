@@ -21,4 +21,4 @@ The code and data used for [V1 of our pre-print on early transmission dynamics](
 
 #### Reference
 
-[Kucharski et al. Early dynamics of transmission and control of 2019-nCoV: a mathematical modelling study. MedRxiv, 2020](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1)
+[Kucharski AJ, Russell TW, Diamond C et al. Early dynamics of transmission and control of 2019-nCoV: a mathematical modelling study. MedRxiv, 2020](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1)
