@@ -250,11 +250,11 @@ plot_international <- function(Rep_plot){
   plot(x_expected,case_export_vector,col="white",ylim=c(0,6),xlim=c(0,6),xlab="expected international exports from Wuhan",ylab="confirmed international exports")
   lines(c(-10,10),c(-10,10),lty=2)
   points(x_expected,case_export_vector,pch=1,col="blue",cex=0.7)
-  text(labels="Australia",x=1.2,y=6,col="blue",adj=0)
-  text(labels="USA",x=1.6,y=5,col="blue",adj=0)
+  text(labels="Australia",x=1.25,y=6,col="blue",adj=0)
+  text(labels="USA",x=2.4,y=5,col="blue",adj=0)
   
-  text(labels="France",x=0.4,y=3,col="blue",adj=0)
-  text(labels="Thailand",x=3.9,y=3.7,col="blue",adj=0)
+  text(labels="France",x=0.5,y=3,col="blue",adj=0)
+  text(labels="Thailand",x=4.2,y=3.7,col="blue",adj=0)
   
   par(mar=c(2,3,1,1))
   
@@ -337,13 +337,13 @@ plot_dispersion <- function(filename="1"){
 
 r0_value_output <- function(filename="1"){
   
-  # filename="1"
+  # filename="2"
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
   
   # Extract R0 estimates
 
-  period_interest <- as.Date("2020-15-01")
+  period_interest <- as.Date("2020-01-15")
 
   med_R0 <- apply(R0_plot,1,function(x){quantile(x,c(0.5))})
   c.text(med_R0[match(period_interest,date_range)])
