@@ -18,8 +18,8 @@ shinyUI(fluidPage(
     or do most generate few and some lots?"),
   
   p("Infections with more individual-level variation (such as SARS) lead to more fragile initial transmission chains, 
-    and hence are less likely to spark a large outbreak following an introduced case. The random-mixing option implies transmission occurs at random
-    with similar secondary cases from all individuals."),
+    and hence are overall less likely to spark a large outbreak following an introduced case (although they can lead to rapidly growing outbreaks if by chance transmission 
+    does take hold. The random-mixing option in the drop-down menu assumes transmission occurs at random with similar secondary cases from all individuals."),
   
   hr(),
   
