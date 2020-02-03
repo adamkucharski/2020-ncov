@@ -4,12 +4,21 @@ Analysis of the 2020 nCoV outbreak. _Note: this is working repository, so code a
 
 ### Guide to files for `stoch_model`
 
-This is a stochastic SEIR model implemented using Euler-Maruyama, with likelihood estimated using SMC by fitting to exported cases over time in countries with high connectivity to Wuhan.
+This is a stochastic SEIR model implemented using Euler-Maruyama, with likelihood estimated using SMC by jointly fitting to cases in Wuhan and exported cases over time in countries with high connectivity to Wuhan.
 
-Data loading and model run script is in `scripts/main_model.r`. Calls the following files:
+Data loading and model run script is in `scripts/main_model.r`. Calls the following R files:
 
 > `R/load_timeseries.r` - Load and format timeseries
 
 > `R/model_functions.r` - Load process model and SMC
 
-> `R/plotting_functions.r` - Plotting
+> `R/plotting_functions.r` - Plotting functions
+
+> `outputs_main.R` - Run main model outputs
+
+The code and data used for [V1 of our pre-print on early transmission dynamics](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1) can be found in `stoch_model_V1_paper`, with same paths as above.
+
+
+#### Reference
+
+[Kucharski et al. Early dynamics of transmission and control of 2019-nCoV: a mathematical modelling study. MedRxiv, 2020](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1)
