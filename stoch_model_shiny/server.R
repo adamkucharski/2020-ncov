@@ -34,7 +34,7 @@ shinyServer(function(input, output,session) {
     if(input$k=="MERS-like"){kk=0.25}
     if(input$k=="Random-mixing"){kk=1}
     
-    # calculate probability
+    # calculate probability of outbreak based on branching process
     ss <- seq(0.001,0.999,0.001)
     calculate_prob <- abs((1 + (input$R0value/kk)*(1 - ss))^(-kk) - ss)
     
@@ -45,9 +45,9 @@ shinyServer(function(input, output,session) {
     n_seq <- seq(0,10,1)
     prob_seq <- 1-(1-prob)^n_seq
     
-    plot(n_seq,prob_seq,type="l",ylim=c(0,1),xlim=c(-0.5,10.5),xlab=c("number of introductions"),ylab="probability of large outbreak",col="white",xaxs="i")
-    points(n_seq,prob_seq,col="blue",pch=19)
+    plot(n_seq,prob_seq,type="l",ylim=c(0,1),xlim=c(-0.5,10.5),xlab=c("number of independently introduced cases"),ylab="probability of large outbreak",col="white",xaxs="i")
     grid(ny = NULL, nx = 0, col = rgb(0.9,0.9,0.9), lty = "solid")
+    points(n_seq,prob_seq,col="blue",pch=19)
 
     })
 
