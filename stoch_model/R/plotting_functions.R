@@ -10,6 +10,12 @@ c.nume<-function(x){
   as.numeric(bp1)
 }
 
+bin_conf <- function(x,n){
+  htest <- binom.test(x,n)
+  h_out <- c(x/n, htest$conf.int[1], htest$conf.int[2])
+  h_out
+}
+
 # Run SMC to get bootstrap estimates --------------------------------------------
 
 run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
@@ -57,13 +63,22 @@ plot_outputs <- function(filename="1"){
   
   # filename="1"
   
-  cut_off <- end_date - as.Date("2020-01-23")
+  cut_off <- 0 #end_date - as.Date("2020-01-23")
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
   
+  # Remove NA fits
+  S_plot = S_plot[,!is.na(S_plot[t_period,])]
+  I_plot = I_plot[,!is.na(I_plot[t_period,])]
+  C_local_plot = C_local_plot[,!is.na(C_local_plot[t_period,])]
+  Rep_local_plot = Rep_local_plot[,!is.na(Rep_local_plot[t_period,])]
+  C_plot = C_plot[,!is.na(C_plot[t_period,])]
+  Rep_plot = Rep_plot[,!is.na(Rep_plot[t_period,])]
+  R0_plot = R0_plot[,!is.na(R0_plot[t_period,])]
+  
   # Calculate quantiles
   S_quantile <- apply(S_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) # thousands
-  Inf_quantile <- apply(I_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})/1e3 # thousands
+  Inf_quantile <- apply(I_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})/theta[["pop_travel"]] # proportion
 
   # Local cases
   Case_local_quantile <- apply(C_local_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
@@ -95,8 +110,7 @@ plot_outputs <- function(filename="1"){
   a_col <- 0.4 # alpha
   xMin1 <- min(as.Date("2019-12-01"))
   xMin <- min(as.Date("2020-01-01"))
-  xMax <- max(date_range)
-  yMax <- max(Inf_quantileA[4,])
+  xMax <- end_date #max(date_range)
   
   # Plot outputs
 
@@ -167,14 +181,25 @@ plot_outputs <- function(filename="1"){
   
   # Plot international confirmations
   
-  plot_international(Rep_plot)
+  plot_international(Rep_plot) #- turn off?
+  #plot.new()
   title(LETTERS[letR],adj=0); letR = letR +1
   
+  
   # Plot estimated local infections
-  plot(date_rangeA,Inf_quantileA[1,],col="white",ylim=c(0,1.2*yMax),xlim=c(xMin1,xMax),xlab="",ylab="prevalence in Wuhan (thousands)")
+  yMax <- 0.15
+  
+  data_point_flight <- flight_report*proportion_on_flight[1]/proportion_on_flight[2]
+  
+  plot(date_rangeA,Inf_quantileA[1,],col="white",ylim=c(0,1.2*yMax),xlim=c(xMin1,xMax),xlab="",ylab="propn prevalence in Wuhan")
   polygon(c(date_rangeA,rev(date_rangeA)),c(Inf_quantileA[2,],rev(Inf_quantileA[4,])),lty=0,col=rgb(0,0.3,1,0.35))
   polygon(c(date_rangeA,rev(date_rangeA)),c(Inf_quantileA[1,],rev(Inf_quantileA[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_rangeA,Inf_quantileA[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  
+  CI_flight <- bin_conf(proportion_on_flight[1],proportion_on_flight[2])
+  
+  points(date_range,data_point_flight,pch=19)
+  lines(c(date_flights_out,date_flights_out),c(CI_flight[2],CI_flight[3]))
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   text(labels="model estimate",x=xMin1,y=1.1*yMax,adj=0,col="blue")
@@ -247,14 +272,14 @@ plot_international <- function(Rep_plot){
   #par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
   par(mar=c(3,3,1,1))
   
-  plot(x_expected,case_export_vector,col="white",ylim=c(0,6),xlim=c(0,6),xlab="expected international exports from Wuhan",ylab="confirmed international exports")
+  plot(x_expected,case_export_vector,col="white",ylim=c(0,7),xlim=c(0,7),xlab="expected international exports from Wuhan",ylab="confirmed international exports")
   lines(c(-10,10),c(-10,10),lty=2)
-  points(x_expected,case_export_vector,pch=1,col="blue",cex=0.7)
-  text(labels="Australia",x=1.2,y=6,col="blue",adj=0)
-  text(labels="USA",x=1.6,y=5,col="blue",adj=0)
+  points(x_expected,case_export_vector,pch=1,col="blue",cex=0.7) -- REMOVED TEMPORARILY
+  #text(labels="Australia",x=1.2,y=6,col="blue",adj=0)
+  #text(labels="USA",x=1.6,y=5,col="blue",adj=0)
   
-  text(labels="France",x=0.4,y=3,col="blue",adj=0)
-  text(labels="Thailand",x=3.9,y=3.7,col="blue",adj=0)
+  #text(labels="France",x=0.4,y=3,col="blue",adj=0)
+  #text(labels="Thailand",x=3.9,y=3.7,col="blue",adj=0)
   
   par(mar=c(2,3,1,1))
   
@@ -343,7 +368,7 @@ r0_value_output <- function(filename="1"){
   
   # Extract R0 estimates
 
-  period_interest <- as.Date("2020-15-01")
+  period_interest <- as.Date("2020-01-15")
 
   med_R0 <- apply(R0_plot,1,function(x){quantile(x,c(0.5))})
   c.text(med_R0[match(period_interest,date_range)])
@@ -379,5 +404,17 @@ fit_int_cases <- function(x_val){
   x_lambda <- rowSums(x_expected)
   #x_lambda
   rpois(length(x_lambda),lambda=x_lambda)
+  
+}
+
+# Calculate new oubtreak probability --------------------------------------
+
+numerical_solver <- function(r0, k){
+  
+  fun <- function (s) {(1 + (r0/k)*(1 - s))^(-k) - s}
+  solutions <- rootSolve::multiroot(fun, c(0, 1))$root
+  
+  realistic_sol <- min(solutions)
+  return(realistic_sol)
   
 }

@@ -59,10 +59,11 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
             pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]),
             local_rep_prop=as.numeric(thetaR_IC[thetaR_IC$param=="local_rep_prop","value"]), # local propn reported
             onset_prop=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop","value"]), # propn onsets known
+            onset_prop_int=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop_int","value"]), # propn onsets known internationally
+            confirmed_prop=as.numeric(thetaR_IC[thetaR_IC$param=="confirmed_prop","value"]), # propn confirmed reported
             travel_frac=NA
 )
 
-#222.0734
 
 theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]] # Estimate fraction that travel
 
@@ -84,8 +85,9 @@ source("R/load_timeseries_data.R",local=TRUE)
 # Run SMC and check likelihood
 output_smc <- smc_model(theta,
                         nn=1e3, # number of particles
-                        dt=0.25
+                        dt=0.1
 )
+
 output_smc$lik
 
 # Run main outputs --------------------------------------------------------------

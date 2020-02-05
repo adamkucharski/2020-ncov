@@ -6,7 +6,9 @@ omit_recent <- 5
 omit_conf <- 0
 
 start_date <- as.Date("2019-11-22")
-end_date <- max(case_data_in$date) # omit recent day?
+
+#end_date <- max(case_data_in$date) # omit recent day?
+end_date <- as.Date("2020-03-01") # Forecast ahead
 date_range <- seq(start_date,end_date,1)
 
 # When restrictions started
@@ -131,15 +133,28 @@ for(ii in 1:length(date_range)){
 
 case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but single point
 
+# Create infection prevalence series --------------------------------------------
+
+date_flights_out <- as.Date("2020-01-29")
+flight_report <- rep(NA,length(date_range))
+flight_report[date_range==date_flights_out] <- 1
+#proportion_on_flight <- c(10,750)
+proportion_on_flight <- c(3,206)
+
+
+
+# NEED REPORTING PARAMETER
+
+
 # Compile list of data to use:
-
-
 data_list = list(local_case_data_onset = case_data_china_time, #case_data_china_time,  # case_data_wuhan_2_time
                  local_case_data_conf = case_data_wuhan_conf_time,
                  int_case_onset = case_data_onset_time,
                  int_case_conf = case_data_matrix,
                  int_case_onset_scale = case_data_scale,
-                 local_case_data_onset_scale = case_data_wuhan_2_scale)
+                 local_case_data_onset_scale = case_data_wuhan_2_scale,
+                 flight_info = flight_report,
+                 flight_prop = proportion_on_flight)
 
 #data_list = list(local_case_data_tt=case_data_china_time[tt],case_data_tt=case_data_onset_time[tt],rep_data_tt=case_data_matrix[tt,])
 

@@ -142,6 +142,12 @@ smc_model <- function(theta,nn,dt=1){
 
     # calculate weights
     w[,tt] <- AssignWeights(data_list,storeL,nn,theta,tt)
+    
+    # check likelihood isn't NA
+    if(is.na(max(w[1:nn,tt])) | max(w[1:nn,tt]) == 0){
+      likelihood0 = -Inf
+      return(list(S_trace=S_traj,C_local_trace=C_local_traj,Rep_local_trace=Rep_local_traj,C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+    }
 
     #c_local_val,c_val,rep_val,local_case_data_tt,case_data_tt,rep_data_tt,nn){
 
@@ -215,6 +221,9 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   case_data_tt <- data_list$int_case_onset[tt]
   rep_data_tt <- data_list$int_case_conf[tt,]
   
+  flight_info_tt <- data_list$flight_info[tt]
+  flight_prop_tt <- data_list$flight_prop
+  
   # Scale for reporting lag
   case_data_tt_scale <- 1#data_list$int_case_onset_scale[tt] # deprecated
   local_case_data_tt_scale <- 1#data_list$local_case_data_onset_scale[tt] # deprecated
@@ -224,6 +233,8 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   rep_local <- storeL[,tt,"reports_local"]
   caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
   repDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
+  inf_prev <- storeL[,tt,"inf1"] + storeL[,tt,"inf2"]
+    
   c_local_val <- pmax(0,case_localDiff)
   c_val <- pmax(0,caseDiff)
   rep_val <- pmax(0,repDiff) # NOTE CHECK FOR POSITIVITY
@@ -232,7 +243,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   # Local confirmed cases (by onset)
 
   if(!is.na(local_case_data_tt)){
-    expected_val <- c_local_val*theta[["onset_prop"]]*theta[["local_rep_prop"]]*local_case_data_tt_scale # scale by reporting proportion and known onsets
+    expected_val <- c_local_val* theta[["confirmed_prop"]]*theta[["onset_prop"]]*theta[["local_rep_prop"]]*local_case_data_tt_scale # scale by reporting proportion and known onsets
     loglikSum_local_onset <- dpois(local_case_data_tt,lambda = expected_val,log=T)
   }else{
     loglikSum_local_onset <- 0
@@ -251,7 +262,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   # International confirmed cases (by country)
 
   # Do location by location
-  x_scaled <- rep_val
+  x_scaled <- theta[["confirmed_prop"]]*rep_val
   x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}); #x_expected <- t(x_expected) # expected exported cases in each location
 
   # # Note here rows are particles, cols are locations.
@@ -266,7 +277,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   # - - -
   # International onsets (total)
   if(!is.na(case_data_tt)){
-    x_scaled <- c_val
+    x_scaled <- theta[["confirmed_prop"]]*c_val*theta[["onset_prop_int"]]
     x_expected <- sapply(x_scaled,function(x){x*as.numeric(top_risk$risk)}) %>% t() # expected exported cases in each location
     x_lam <- rowSums(x_expected)
     y_lam <- case_data_tt
@@ -277,10 +288,27 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   }else{
     loglikSum_inf_onset <- 0
   }
+  
+  # - - -
+  # Additional probablity infections
+  
+  if(!is.na(flight_info_tt)){
+
+
+    prob_inf <- pmax(0,inf_prev/theta[["pop_travel"]]) # ensure >=0
+    #print(prob_inf)
+    
+    loglikSum_flight_info <- dbinom(flight_prop_tt[1],flight_prop_tt[2],prob=prob_inf,log=T)
+
+  }else{
+    loglikSum_flight_info <- 0
+  }
+  
+  
 
   # - - -
   # Tally up likelihoods
-  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset #+ loglikSum_int_conf #+ loglikSum_local_conf
+  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset + loglikSum_flight_info #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }
@@ -362,6 +390,9 @@ simple_sim <- function(){
 
 }
 
+
+# MLE grid search -  1D ---------------------------------------------------------
+
 MLE_check <- function(p_name = "local_rep_prop", theta_tab,nn=1e3){
 
   # theta_tab <- seq(0.001,0.01,0.001)
@@ -384,13 +415,46 @@ MLE_check <- function(p_name = "local_rep_prop", theta_tab,nn=1e3){
 
 }
 
-numerical_solver <- function(r0, k){
+# MLE grid search -  2D ---------------------------------------------------------
 
-  fun <- function (s) {(1 + (r0/k)*(1 - s))^(-k) - s}
-  solutions <- rootSolve::multiroot(fun, c(0, 1))$root
-
-  realistic_sol <- min(solutions)
-  return(realistic_sol)
-
+MLE_check_2D <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop", theta_tab1, theta_tab2,nn=1e3){
+  
+  # p1_name = "local_rep_prop"; p2_name = "confirmed_prop"; theta_tab1 = seq(0.01,0.05,0.01); theta_tab2 = seq(0.3,1,0.1)
+  
+  store_lik <- NULL
+  
+  for(ii in 1:length(theta_tab1)){
+    
+    for(jj in 1:length(theta_tab2)){
+    
+    theta[[p1_name]] <- theta_tab1[ii]
+    theta[[p2_name]] <- theta_tab2[jj]
+    
+    # Run SMC and output likelihooda
+    output_smc <- smc_model(theta,
+                            nn=1e3 # number of particles
+    )
+    store_lik <- rbind(store_lik,c(theta_tab1[ii],theta_tab2[jj],output_smc$lik))
+    
+    } 
+  }
+  
+  colnames(store_lik) <- c("param1","param2","lik")
+  store_lik <- as_tibble(store_lik)
+  
 }
+
+# Resample parameters -----------------------------------------------------
+
+
+# Compute acceptance probability ------------------------------------------
+
+
+# Run MCMC loop ------------------------------------------
+
+
+
+
+
+
 
