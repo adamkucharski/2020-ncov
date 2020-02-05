@@ -75,7 +75,7 @@ We estimated the time-varying reproduction number using sequential Monte Carlo (
 
 1. Daily incidence of initial cases in Wuhan with no market exposure, by date of onset. The most recent data points are omitted during fitting as they are likely to be strongly influenced by delays in reporting.  Source: [Huang et al](https://www.nejm.org/doi/pdf/10.1056/NEJMoa2001316?articleTools=true).
 
-1. Exported infections identified on a charter flight to Japan on 26th January, where all 206 passengers were tested for nCoV and 3 were positive (2 without symptoms).  Source: [Huang et al](https://www.reuters.com/article/china-health-japan/refile-update-3-three-japanese-evacuees-from-wuhan-test-positive-for-virus-2-had-no-symptoms-idUSL4N29Z0CS).
+1. Exported infections identified on a charter flight to Japan on 26th January, where all 206 passengers were tested for nCoV and 3 were positive (2 without symptoms).  Source: [Reuters](https://www.reuters.com/article/china-health-japan/refile-update-3-three-japanese-evacuees-from-wuhan-test-positive-for-virus-2-had-no-symptoms-idUSL4N29Z0CS).
 
 1. _Validation dataset (not used for fitting): Daily incidence of cases in Wuhan, by date of confirmation. Source: [HKU](https://www.med.hku.hk/f/news/3549/7418/Wuhan-coronavirus-outbreak_AN-UPDATE_20200127.pdf)_
 
