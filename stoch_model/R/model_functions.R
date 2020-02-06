@@ -110,6 +110,9 @@ smc_model <- function(theta,nn,dt=1){
   #simzeta <- matrix(rlnorm(nn*t_length, mean = -theta[["betavol"]]^2/2, sd = theta[["betavol"]]),ncol=ttotal)
   simzeta <- matrix(rnorm(nn*t_length, mean = 0, sd = theta[["betavol"]]),nrow=ttotal)
   simzeta[1,] <- exp(simzeta[1,])*theta[["beta"]] # define IC
+  
+  # Fix R for forward simulation
+  #simzeta[fix_r0_tt:ttotal,] <- log(theta[["r0_decline"]])
 
   # Latent variables
   S_traj = matrix(NA,ncol=1,nrow=ttotal)
@@ -222,7 +225,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   rep_data_tt <- data_list$int_case_conf[tt,]
   
   flight_info_tt <- data_list$flight_info[tt]
-  flight_prop_tt <- data_list$flight_prop
+  flight_prop_tt <- data_list$flight_prop[tt,]
   
   # Scale for reporting lag
   case_data_tt_scale <- 1#data_list$int_case_onset_scale[tt] # deprecated
@@ -293,7 +296,6 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   # Additional probablity infections
   
   if(!is.na(flight_info_tt)){
-
 
     prob_inf <- pmax(0,inf_prev/theta[["pop_travel"]]) # ensure >=0
     #print(prob_inf)

@@ -5,15 +5,19 @@ pre_peak <- 3 # -1 is 2 before peak, 2 is 2 after
 omit_recent <- 5
 omit_conf <- 0
 
-start_date <- as.Date("2019-11-22")
+# Set up start/end dates
+start_date <- as.Date("2019-11-22") # first case
 
 #end_date <- max(case_data_in$date) # omit recent day?
-end_date <- as.Date("2020-03-01") # Forecast ahead
+end_date <- as.Date("2020-03-15") # period to forecast ahead
 date_range <- seq(start_date,end_date,1)
 
 # When restrictions started
 wuhan_travel_restrictions <- as.Date("2020-01-23")
 wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
+
+fix_r0_tt <- as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
+
 
 # Only use top twenty exports
 n_risk <- 20
@@ -133,28 +137,43 @@ for(ii in 1:length(date_range)){
 
 case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but single point
 
-# Create infection prevalence series --------------------------------------------
+# Create flight prevalence series --------------------------------------------
 
-date_flights_out <- as.Date("2020-01-29")
+date_flights_out_1_japan <- as.Date("2020-01-29")
+date_flights_out_2_germany <- as.Date("2020-02-01")
+
 flight_report <- rep(NA,length(date_range))
-flight_report[date_range==date_flights_out] <- 1
+propn_flight_matrix <- matrix(NA,nrow=length(date_range),ncol=2)
+flight_report[date_range==date_flights_out_1_japan | date_range==date_flights_out_2_germany] <- 1
 #proportion_on_flight <- c(10,750)
-proportion_on_flight <- c(3,206)
 
+#prop_flight_1_japan <- c(3,206)
+prop_flight_1_japan <- c(8,565)
+prop_flight_2_germany <- c(2,120)
+
+propn_flight_matrix[date_range==date_flights_out_1_japan,] <- prop_flight_1_japan
+propn_flight_matrix[date_range==date_flights_out_2_germany,] <- prop_flight_2_germany
+
+
+# Extract Feb Wuhan data --------------------------------------------------
+
+cases_Wuhan <- data_hubei_Feb %>% filter(CNTY_CODE == 420100)
+cases_Wuhan <-  cases_Wuhan %>% mutate(new_case = NA)
+cases_Wuhan$new_case <- cases_Wuhan$total_case - c(NA,head(cases_Wuhan$total_case,-1)) 
 
 
 # NEED REPORTING PARAMETER
 
 
 # Compile list of data to use:
-data_list = list(local_case_data_onset = case_data_china_time, #case_data_china_time,  # case_data_wuhan_2_time
+data_list <- list(local_case_data_onset = case_data_china_time, #case_data_china_time,  # case_data_wuhan_2_time
                  local_case_data_conf = case_data_wuhan_conf_time,
                  int_case_onset = case_data_onset_time,
                  int_case_conf = case_data_matrix,
                  int_case_onset_scale = case_data_scale,
                  local_case_data_onset_scale = case_data_wuhan_2_scale,
                  flight_info = flight_report,
-                 flight_prop = proportion_on_flight)
+                 flight_prop = propn_flight_matrix)
 
 #data_list = list(local_case_data_tt=case_data_china_time[tt],case_data_tt=case_data_onset_time[tt],rep_data_tt=case_data_matrix[tt,])
 

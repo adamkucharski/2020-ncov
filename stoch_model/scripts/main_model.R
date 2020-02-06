@@ -35,6 +35,9 @@ china_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_bioRv
 wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_lancet_huang_et_al.csv"))
 wuhan_onset_2020_01_30 <- read_csv(paste0(dropbox_path,"data/time_series_data_qui_li_nejm_wuhan.csv"))
 wuhan_conf_data_in <- read_csv(paste0(dropbox_path,"data/time_series_HKU_Wuhan.csv"))
+
+data_hubei_Feb <- read_csv(paste0(dropbox_path,"data/hubei_confirmed_cases.csv"))
+
 case_data_in <- international_conf_data_in
 travel_data <- travel_data_mobs
 
@@ -61,7 +64,8 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
             onset_prop=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop","value"]), # propn onsets known
             onset_prop_int=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop_int","value"]), # propn onsets known internationally
             confirmed_prop=as.numeric(thetaR_IC[thetaR_IC$param=="confirmed_prop","value"]), # propn confirmed reported
-            travel_frac=NA
+            travel_frac=NA,
+            r0_decline =as.numeric(thetaR_IC[thetaR_IC$param=="r0_decline","value"])
 )
 
 
@@ -85,7 +89,7 @@ source("R/load_timeseries_data.R",local=TRUE)
 # Run SMC and check likelihood
 output_smc <- smc_model(theta,
                         nn=1e3, # number of particles
-                        dt=0.1
+                        dt=0.2
 )
 
 output_smc$lik
