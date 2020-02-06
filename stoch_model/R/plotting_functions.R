@@ -193,10 +193,20 @@ plot_outputs <- function(filename="1"){
   polygon(c(date_rangeA,rev(date_rangeA)),c(Inf_quantileA[1,],rev(Inf_quantileA[5,])),lty=0,col=rgb(0,0.3,1,0.2))
   lines(date_rangeA,Inf_quantileA[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   
-  # Japan flight
-  CI_flight <- bin_conf(prop_flight_1_japan[1],prop_flight_1_japan[2])
-  points(date_flights_out_1_japan,CI_flight[1],pch=19)
-  lines(c(date_flights_out_1_japan,date_flights_out_1_japan),c(CI_flight[2],CI_flight[3]))
+  # Japan flight 1
+  CI_flight_japan_1 <- bin_conf(prop_flight_1_japan[1],prop_flight_1_japan[2])
+  points(date_flights_out_1_japan,CI_flight_japan_1[1],pch=19)
+  lines(c(date_flights_out_1_japan,date_flights_out_1_japan),c(CI_flight_japan_1[2],CI_flight_japan_1[3]))
+  
+  # Japan flight 2
+  CI_flight_japan_2 <- bin_conf(prop_flight_2_japan[1],prop_flight_2_japan[2])
+  points(date_flights_out_2_japan,CI_flight_japan_2[1],pch=19)
+  lines(c(date_flights_out_2_japan,date_flights_out_2_japan),c(CI_flight_japan_2[2],CI_flight_japan_2[3]))
+  
+  # Japan flight 3
+  CI_flight_japan_3 <- bin_conf(prop_flight_1_japan[1],prop_flight_1_japan[2])
+  points(date_flights_out_1_japan,CI_flight_japan_3[1],pch=19)
+  lines(c(date_flights_out_1_japan,date_flights_out_1_japan),c(CI_flight_japan_3[2],CI_flight_japan_3[3]))
   
   # Germany flight
   CI_flight <- bin_conf(prop_flight_2_germany[1],prop_flight_2_germany[2])
