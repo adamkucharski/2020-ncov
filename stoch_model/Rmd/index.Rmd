@@ -1,5 +1,5 @@
 ---
-title: "Analysis of early transmission dynamics of nCoV in Wuhan"
+title: "Analysis and projections of transmission dynamics of nCoV in Wuhan"
 output:
   html_document: default
   pdf_document: default

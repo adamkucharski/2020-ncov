@@ -159,7 +159,8 @@ flight_report[date_range == date_flights_out_1_japan |
 #prop_flight_1_japan <- c(8,565)
 #prop_flight_2_japan <- c(4,296)
 
-prop_flight_1_japan <- c(12,861)
+#prop_flight_1_japan <- c(12,861)
+prop_flight_1_japan <- c(4,206)
 prop_flight_2_japan <- c(2,210)
 prop_flight_3_japan <- c(2,149)
 prop_flight_2_germany <- c(2,120)
