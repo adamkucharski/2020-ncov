@@ -140,18 +140,33 @@ case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but sin
 # Create flight prevalence series --------------------------------------------
 
 date_flights_out_1_japan <- as.Date("2020-01-29")
+date_flights_out_2_japan <- as.Date("2020-01-30")
+date_flights_out_3_japan <- as.Date("2020-01-31")
 date_flights_out_2_germany <- as.Date("2020-02-01")
 
 flight_report <- rep(NA,length(date_range))
 propn_flight_matrix <- matrix(NA,nrow=length(date_range),ncol=2)
-flight_report[date_range==date_flights_out_1_japan | date_range==date_flights_out_2_germany] <- 1
+flight_report[date_range == date_flights_out_1_japan |
+              date_range == date_flights_out_2_japan | 
+              date_range == date_flights_out_3_japan |
+              date_range == date_flights_out_2_germany] <- 1
+
 #proportion_on_flight <- c(10,750)
 
 #prop_flight_1_japan <- c(3,206)
-prop_flight_1_japan <- c(8,565)
+
+# combining the two japan flights on the same day
+#prop_flight_1_japan <- c(8,565)
+#prop_flight_2_japan <- c(4,296)
+
+prop_flight_1_japan <- c(12,861)
+prop_flight_2_japan <- c(2,210)
+prop_flight_3_japan <- c(2,149)
 prop_flight_2_germany <- c(2,120)
 
 propn_flight_matrix[date_range==date_flights_out_1_japan,] <- prop_flight_1_japan
+propn_flight_matrix[date_range==date_flights_out_2_japan,] <- prop_flight_2_japan
+propn_flight_matrix[date_range==date_flights_out_3_japan,] <- prop_flight_3_japan
 propn_flight_matrix[date_range==date_flights_out_2_germany,] <- prop_flight_2_germany
 
 
