@@ -172,8 +172,8 @@ plot_outputs <- function(filename="1"){
   lines(date_range,Rep_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   points(date_range,case_time,pch=1)
   
-  text(labels="model estimate",x=xMin1,y=0.9*ym1,adj=0,col="blue")
-  text(labels="non-fitted data (used for validation)",x=xMin1,y=0.8*ym1,adj=0,col="black")
+  text(labels="model estimate",x=xMin1,y=0.95*ym1,adj=0,col="blue")
+  text(labels="non-fitted data (used for validation)",x=xMin1,y=0.85*ym1,adj=0,col="black")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   title(LETTERS[letR],adj=0); letR = letR +1
@@ -204,9 +204,9 @@ plot_outputs <- function(filename="1"){
   lines(c(date_flights_out_2_japan,date_flights_out_2_japan),c(CI_flight_japan_2[2],CI_flight_japan_2[3]))
   
   # Japan flight 3
-  CI_flight_japan_3 <- bin_conf(prop_flight_1_japan[1],prop_flight_1_japan[2])
-  points(date_flights_out_1_japan,CI_flight_japan_3[1],pch=19)
-  lines(c(date_flights_out_1_japan,date_flights_out_1_japan),c(CI_flight_japan_3[2],CI_flight_japan_3[3]))
+  CI_flight_japan_3 <- bin_conf(prop_flight_3_japan[1],prop_flight_3_japan[2])
+  points(date_flights_out_3_japan,CI_flight_japan_3[1],pch=19)
+  lines(c(date_flights_out_3_japan,date_flights_out_3_japan),c(CI_flight_japan_3[2],CI_flight_japan_3[3]))
   
   # Germany flight
   CI_flight <- bin_conf(prop_flight_2_germany[1],prop_flight_2_germany[2])
@@ -215,6 +215,7 @@ plot_outputs <- function(filename="1"){
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   text(labels="model estimate",x=xMin1,y=1.1*yMax,adj=0,col="blue")
+  text(labels="fitted data from evacuation flights",x=xMin1,y=1*yMax,adj=0,col="black")
   
   title(LETTERS[letR],adj=0); letR = letR + 1
   
@@ -241,10 +242,10 @@ plot_outputs <- function(filename="1"){
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   text(labels="travel restrictions",x=wuhan_travel_restrictions+0.5,y=0.9*ym1,adj=0,col="red")
   
-  points(cases_Wuhan$date,cases_Wuhan$new_case)
+  points(cases_Wuhan$date,cases_Wuhan$new_case,pch=19)
   
-  text(labels="model estimate",x=xMin1+1,y=0.6*ym1,adj=0,col="blue")
-  text(labels="non-fitted data",x=xMin1+1,y=0.5*ym1,adj=0,col="black")
+  text(labels="model estimate",x=xMin1+1,y=0.65*ym1,adj=0,col="blue")
+  text(labels="fitted data",x=xMin1+1,y=0.55*ym1,adj=0,col="black")
   
   title(LETTERS[letR],adj=0); letR = letR + 1
   

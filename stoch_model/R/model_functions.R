@@ -32,7 +32,7 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   for(ii in seq((t_start+dt),t_end,dt) ){
 
     # transitions
-    S_to_E1 <- susceptible_t*(infectious_t1+infectious_t2)*inf_rate # stochastic transmission
+    S_to_E1 <- susceptible_t*(theta[["pre_symp"]]*tr_exposed_t2+infectious_t1+infectious_t2)*inf_rate # stochastic transmission
 
     # Delay until symptoms
     E1_to_E2 <- exposed_t1*inc_rate # as two compartments
@@ -234,6 +234,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   # Gather variables
   case_localDiff <- storeL[,tt,"cases_local"] - storeL[,tt-1,"cases_local"]
   rep_local <- storeL[,tt,"reports_local"]
+  repDiff_local <- storeL[,tt,"reports_local"] - storeL[,tt-1,"reports_local"]
   caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
   repDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
   inf_prev <- storeL[,tt,"inf1"] + storeL[,tt,"inf2"]
@@ -241,6 +242,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   c_local_val <- pmax(0,case_localDiff)
   c_val <- pmax(0,caseDiff)
   rep_val <- pmax(0,repDiff) # NOTE CHECK FOR POSITIVITY
+  rep_val_local <- pmax(0,repDiff_local) # NOTE CHECK FOR POSITIVITY
   r_local_rep_cum <- rep_local
 
   # Local confirmed cases (by onset)
@@ -254,12 +256,14 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # Local confirmed cases (by confirmation) -- HOLD OUT FOR NOW AS LIKELIHOOD LOW
 
-  # if(!is.na(local_case_data_conf_tt)){
-  #   expected_val <- r_local_rep_cum*theta[["local_rep_prop"]] # scale by reporting proportion and known onsets
-  #   loglikSum_local_conf <- dpois(local_case_data_conf_tt,lambda = r_local_rep_cum,log=T)
-  # }else{
-  #   loglikSum_local_conf <- 0
-  # }
+  if(!is.na(local_case_data_conf_tt)){
+    expected_val <- rep_val_local * theta[["confirmed_prop"]] * theta[["local_rep_prop"]] # scale by reporting proportion and known onsets
+    #loglikSum_local_conf <- dpois(local_case_data_conf_tt,lambda = expected_val,log=T)
+    
+    loglikSum_local_conf <- dnbinom(x=local_case_data_conf_tt,mu=expected_val,size=1/theta[["rep_local_var"]],log=T)
+  }else{
+    loglikSum_local_conf <- 0
+  }
 
   # - - -
   # International confirmed cases (by country)
@@ -270,7 +274,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # # Note here rows are particles, cols are locations.
   x_lam <- x_expected; dim(x_lam) <- NULL # flatten data on expectation
-  y_lam <- rep(rep_data_tt,nn); #dim(y_lam) <- NULL
+  y_lam <- rep(rep_data_tt,nn); #dim(y_lam) <- NULL 
 
   # Calculate likelihood
   loglik <- dpois(y_lam,lambda=x_lam,log=T)
@@ -293,7 +297,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   }
   
   # - - -
-  # Additional probablity infections
+  # Additional probablity infections from evacuation flights
   
   if(!is.na(flight_info_tt)){
 
@@ -310,7 +314,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # - - -
   # Tally up likelihoods
-  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset + loglikSum_flight_info #+ loglikSum_int_conf #+ loglikSum_local_conf
+  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset + loglikSum_flight_info + loglikSum_local_conf #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }

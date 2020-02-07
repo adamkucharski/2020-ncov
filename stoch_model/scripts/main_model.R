@@ -65,7 +65,9 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
             onset_prop_int=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop_int","value"]), # propn onsets known internationally
             confirmed_prop=as.numeric(thetaR_IC[thetaR_IC$param=="confirmed_prop","value"]), # propn confirmed reported
             travel_frac=NA,
-            r0_decline =as.numeric(thetaR_IC[thetaR_IC$param=="r0_decline","value"])
+            r0_decline =as.numeric(thetaR_IC[thetaR_IC$param=="r0_decline","value"]), # decline in R0 for scenario analysis
+            rep_local_var =as.numeric(thetaR_IC[thetaR_IC$param=="rep_local_var","value"]), # dispersion in local reporting confirmed cases
+            pre_symp =as.numeric(thetaR_IC[thetaR_IC$param=="pre_symp","value"]) # transmission in 2nd half of Erland period (binary term)
 )
 
 
@@ -89,7 +91,7 @@ source("R/load_timeseries_data.R",local=TRUE)
 # Run SMC and check likelihood
 output_smc <- smc_model(theta,
                         nn=1e3, # number of particles
-                        dt=0.2
+                        dt=0.25
 )
 
 output_smc$lik

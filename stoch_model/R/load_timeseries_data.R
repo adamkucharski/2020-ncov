@@ -16,7 +16,7 @@ date_range <- seq(start_date,end_date,1)
 wuhan_travel_restrictions <- as.Date("2020-01-23")
 wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
-fix_r0_tt <- as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
+fix_r0_tt <- as.numeric(as.Date("2020-02-06") - 7 - start_date + 1) #as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
 
 
 # Only use top twenty exports
@@ -103,7 +103,6 @@ case_data_china_time <- case_data_china_time + case_data_wuhan_time
 
 # Load Wuhan 2020-01-30 onset data --------------------------------------------
 
-
 case_data_wuhan_2 <- wuhan_onset_2020_01_30
 case_data_wuhan_2$number <- case_data_wuhan_2$number - case_data_wuhan_2$linked_to_market # remove market exposures
 final_time_wuhan_2 <- max(case_data_wuhan_2$date) # find latest data point
@@ -127,15 +126,15 @@ case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range + pre_pe
 
 # Load Wuhan confirmed data --------------------------------------------
 
-case_data_wuhan_conf <- wuhan_conf_data_in
-case_data_wuhan_conf_time <- rep(0,length(date_range))
-cutoff_time_wuhan <- max(case_data_wuhan_conf$date)
-
-for(ii in 1:length(date_range)){
-  case_data_wuhan_conf_time[ii] = sum(case_data_wuhan_conf[case_data_wuhan_conf$date==date_range[ii],]$number)
-}
-
-case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but single point
+# case_data_wuhan_conf <- wuhan_conf_data_in
+# case_data_wuhan_conf_time <- rep(0,length(date_range))
+# cutoff_time_wuhan <- max(case_data_wuhan_conf$date)
+# 
+# for(ii in 1:length(date_range)){
+#   case_data_wuhan_conf_time[ii] = sum(case_data_wuhan_conf[case_data_wuhan_conf$date==date_range[ii],]$number)
+# }
+# 
+# case_data_wuhan_conf_time[date_range>cutoff_time_wuhan] <- NA # omit all but single point
 
 # Create flight prevalence series --------------------------------------------
 
@@ -176,6 +175,16 @@ propn_flight_matrix[date_range==date_flights_out_2_germany,] <- prop_flight_2_ge
 cases_Wuhan <- data_hubei_Feb %>% filter(CNTY_CODE == 420100)
 cases_Wuhan <-  cases_Wuhan %>% mutate(new_case = NA)
 cases_Wuhan$new_case <- cases_Wuhan$total_case - c(NA,head(cases_Wuhan$total_case,-1)) 
+
+case_data_wuhan_conf_time <- rep(NA,length(date_range))
+cutoff_time_wuhan <- max(cases_Wuhan$date)
+cutoff_min_wuhan <- as.Date("2020-01-21")
+
+for(ii in 1:length(date_range)){
+  case_data_wuhan_conf_time[ii] = sum(cases_Wuhan[cases_Wuhan$date==date_range[ii],]$new_case)
+}
+
+case_data_wuhan_conf_time[date_range>cutoff_time_wuhan | date_range<cutoff_min_wuhan] <- NA # omit all old and recent points
 
 
 # NEED REPORTING PARAMETER
