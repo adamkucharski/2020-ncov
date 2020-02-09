@@ -1,13 +1,15 @@
 library(shiny)
 library(rootSolve)
 
+# setwd("~/Documents/GitHub/2020-ncov/stoch_model_shiny/")
+
 # Define UI for slider demo application
 shinyUI(fluidPage(
   
   #  Application title
   h3("Probability of a large 2019-nCoV outbreak following introduction of cases"),
   
-  p(em("Note: this is preliminary analysis and has not yet been peer-reviewed.")),
+  p(em("Note: this is preliminary analysis and has not been peer-reviewed.")),
   
   p("This analysis uses a model that incorporates randomness and individual-level variation in transmission
     (i.e. potential for 'superspreading') to calculate the probability that a given number of independently
@@ -34,7 +36,7 @@ shinyUI(fluidPage(
       selectInput("k", 
                   label = "Assumed individual-level variation in transmission",
                   choices = list("SARS-like", "MERS-like",
-                                 "Random-mixing"),
+                                 "Random-mixing","nCoV-like (early estimate)"),
                   selected = "SARS-like")
 
     ),
@@ -58,12 +60,13 @@ shinyUI(fluidPage(
 
   h4('About this app'),
   
-  p("Contributors: Adam Kucharski, Tim Russell, Charlie Diamond, CMMID nCoV working group, Sebastian Funk, Rosalind Eggo."),
+  p("Contributors: Adam Kucharski, Christian Althaus, Tim Russell, Charlie Diamond, CMMID nCoV working group, Sebastian Funk, Rosalind Eggo."),
   p("More real-time nCoV analysis by CMMID is ", a(href = 'https://cmmid.github.io/ncov','available here.')),
   
-  h4('Reference'),
+  h4('References'),
   
   p(a(href = "https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1","Kucharski AJ, Russell TW, Diamond C et al. Early dynamics of transmission and control of 2019-nCoV: a mathematical modelling study. MedRxiv, 2020")),
+  p(a(href = "XX","Kucharski AJ, Althaus C.  The role of superspreading in Middle East respiratory syndrome coronavirus (MERS-CoV) transmission. Eurosurveillance, 2015")),
   
   hr()
   

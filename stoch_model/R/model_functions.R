@@ -112,7 +112,7 @@ smc_model <- function(theta,nn,dt=1){
   simzeta[1,] <- exp(simzeta[1,])*theta[["beta"]] # define IC
   
   # Fix R for forward simulation
-  #simzeta[fix_r0_tt:ttotal,] <- log(theta[["r0_decline"]])
+  simzeta[fix_r0_tt:ttotal,] <- log(theta[["r0_decline"]])
 
   # Latent variables
   S_traj = matrix(NA,ncol=1,nrow=ttotal)
@@ -179,7 +179,7 @@ smc_model <- function(theta,nn,dt=1){
     lik_values[tt] = log(sum(w[1:nn,tt])) # log-likelihoods
   }
 
-  likelihood0 = -ttotal*log(nn)+ sum(lik_values) # log-likelihoods
+  likelihood0 = -ttotal*log(nn)+ sum(lik_values) # add full averaged log-likelihoods
 
   # Sample latent variables:
   locs <-  sample(1:nn,prob = W[1:nn,tt],replace = T)
@@ -302,7 +302,8 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   if(!is.na(flight_info_tt)){
 
     prob_inf <- pmax(0,inf_prev/theta[["pop_travel"]]) # ensure >=0
-    #print(prob_inf)
+    
+    #print(c(flight_prop_tt[1],flight_prop_tt[2],prob_inf[1]))
     
     loglikSum_flight_info <- dbinom(flight_prop_tt[1],flight_prop_tt[2],prob=prob_inf,log=T)
 
@@ -314,7 +315,8 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # - - -
   # Tally up likelihoods
-  loglikSum <- loglikSum_local_onset   + loglikSum_inf_onset + loglikSum_flight_info + loglikSum_local_conf #+ loglikSum_int_conf #+ loglikSum_local_conf
+  # loglikSum_inf_onset
+  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset + loglikSum_local_conf + loglikSum_flight_info  #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }
@@ -423,7 +425,9 @@ MLE_check <- function(p_name = "local_rep_prop", theta_tab,nn=1e3){
 
 # MLE grid search -  2D ---------------------------------------------------------
 
-MLE_check_2D <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop", theta_tab1, theta_tab2,nn=1e3){
+MLE_check_2D <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop", 
+                         theta_tab1, theta_tab2,nn=1e3,
+                         filename = 1){
   
   # p1_name = "local_rep_prop"; p2_name = "confirmed_prop"; theta_tab1 = seq(0.01,0.05,0.01); theta_tab2 = seq(0.3,1,0.1)
   
@@ -447,6 +451,8 @@ MLE_check_2D <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
   
   colnames(store_lik) <- c("param1","param2","lik")
   store_lik <- as_tibble(store_lik)
+  
+  write_csv(store_lik,paste0("outputs/param_search_",filename,".csv"))
   
 }
 

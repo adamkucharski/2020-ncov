@@ -9,14 +9,14 @@ omit_conf <- 0
 start_date <- as.Date("2019-11-22") # first case
 
 #end_date <- max(case_data_in$date) # omit recent day?
-end_date <- as.Date("2020-03-15") # period to forecast ahead
+end_date <- as.Date("2020-03-01") # period to forecast ahead
 date_range <- seq(start_date,end_date,1)
 
 # When restrictions started
 wuhan_travel_restrictions <- as.Date("2020-01-23")
 wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
-fix_r0_tt <- as.numeric(as.Date("2020-02-06") - 7 - start_date + 1) #as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
+fix_r0_tt <- as.numeric(max(data_hubei_Feb$date) - start_date + 1) #as.Date("2020-01-25") as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
 
 
 # Only use top twenty exports
@@ -56,7 +56,7 @@ for(ii in 1:nrow(case_data)){
 # Load international onset data --------------------------------------------
 case_data_onset_report_date <- as.Date("2020-01-28")
 case_data_onset <- international_onset_data_in
-cutoff_time_int_onsets <- max(case_data_onset$date) - omit_recent # omit final days of time points
+cutoff_time_int_onsets <- max(case_data_onset$date) #- omit_recent # omit final days of time points
 
 case_data_onset[case_data_onset$date>cutoff_time_int_onsets,"number"] <- NA
 case_data_onset_time <- rep(0,length(date_range))
@@ -143,6 +143,11 @@ date_flights_out_2_japan <- as.Date("2020-01-30")
 date_flights_out_3_japan <- as.Date("2020-01-31")
 date_flights_out_2_germany <- as.Date("2020-02-01")
 
+date_flights_out_1_singapore <- as.Date("2020-02-06")
+date_flights_out_1_malaysia <- as.Date("2020-02-04")
+date_flights_out_1_italy <- as.Date("2020-02-03")
+#date_flights_out_1_korea <- as.Date("2020-01-31")
+
 flight_report <- rep(NA,length(date_range))
 propn_flight_matrix <- matrix(NA,nrow=length(date_range),ncol=2)
 flight_report[date_range == date_flights_out_1_japan |
@@ -158,17 +163,27 @@ flight_report[date_range == date_flights_out_1_japan |
 #prop_flight_1_japan <- c(8,565)
 #prop_flight_2_japan <- c(4,296)
 
-#prop_flight_1_japan <- c(12,861)
+
 prop_flight_1_japan <- c(4,206)
 prop_flight_2_japan <- c(2,210)
 prop_flight_3_japan <- c(2,149)
 prop_flight_2_germany <- c(2,120)
 
+prop_flight_1_singapore <- c(4,91)
+prop_flight_1_malaysia <- c(2,107)
+prop_flight_1_italy <- c(1,56)
+prop_flight_1_korea <- c(1,368)
+
+# Add together same day
+prop_flight_2_germany <- prop_flight_2_germany + prop_flight_1_korea
+ 
 propn_flight_matrix[date_range==date_flights_out_1_japan,] <- prop_flight_1_japan
 propn_flight_matrix[date_range==date_flights_out_2_japan,] <- prop_flight_2_japan
 propn_flight_matrix[date_range==date_flights_out_3_japan,] <- prop_flight_3_japan
 propn_flight_matrix[date_range==date_flights_out_2_germany,] <- prop_flight_2_germany
-
+propn_flight_matrix[date_range==date_flights_out_1_singapore,] <- prop_flight_1_singapore
+propn_flight_matrix[date_range==date_flights_out_1_malaysia,] <- prop_flight_1_malaysia
+propn_flight_matrix[date_range==date_flights_out_1_italy,] <- prop_flight_1_italy
 
 # Extract Feb Wuhan data --------------------------------------------------
 

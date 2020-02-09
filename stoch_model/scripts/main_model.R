@@ -11,6 +11,7 @@ library(magrittr)
 library(coda)
 library(tidyverse)
 library(rootSolve)
+library(mgcv)
   
 registerDoMC(4)  #change the 2 to your number of CPU cores
 
@@ -40,6 +41,8 @@ data_hubei_Feb <- read_csv(paste0(dropbox_path,"data/hubei_confirmed_cases.csv")
 
 case_data_in <- international_conf_data_in
 travel_data <- travel_data_mobs
+
+t_step <- 0.25
 
 # - - -
 # Load model and plotting functions
@@ -81,7 +84,7 @@ theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","tr_w
 # - - -
 # Load timeseries -  specify travel data being used
 # NOTE: USES REPORTING DELAY AS INPUT
-source("R/load_timeseries_data.R",local=TRUE)
+source("R/load_timeseries_data.R")
 
 
 
@@ -91,7 +94,7 @@ source("R/load_timeseries_data.R",local=TRUE)
 # Run SMC and check likelihood
 output_smc <- smc_model(theta,
                         nn=1e3, # number of particles
-                        dt=0.25
+                        dt=t_step
 )
 
 output_smc$lik

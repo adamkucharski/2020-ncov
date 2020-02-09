@@ -17,7 +17,7 @@ dev.copy(png,paste("plots/param_rel_1.png",sep=""),units="cm",width=10,height=10
 dev.off()
 
 # - - - - - - - - - - 
-# 1D parameter grid search for beta volatility
+# 1D parameter grid search for beta volatility (DEPRECATED)
 
 par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
 
@@ -35,16 +35,24 @@ dev.off()
 
 # par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
 
-s_out <- MLE_check_2D(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
-                   theta_tab1 = seq(0.002,0.012,0.002), theta_tab2 = seq(0.9,1,0.02),nn=1e3)
+MLE_check_2D(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
+               theta_tab1 = seq(0.002,0.03,0.002), theta_tab2 = seq(0.3,1,0.1),nn=1e3)
 
-s_out[max(s_out$lik)==s_out$lik,] # maximum likelihood
+profile_plot(p1_name = "local_rep_prop", p2_name = "confirmed_prop", filename=1)
 
-# plot(s_out$param,s_out$lik,ylim=c(max(s_out$lik)-5,max(s_out$lik)),xlab="value",ylab="log likelihood",pch=19)
-# lines(c(0,1e2),c(1,1)*(max(s_out$lik)-1.92),lty=2)
 
-# dev.copy(png,paste("plots/param_rel_1.png",sep=""),units="cm",width=10,height=10,res=150)
-# dev.off()
+# Beta vol parameter
+
+MLE_check_2D(p1_name = "betavol", p2_name = "rep_local_var",
+             theta_tab1 = seq(0.1,0.6,0.1), theta_tab2 = seq(0.25,2,0.25),nn=1e3)
+
+
+profile_plot(p1_name = "betavol", p2_name = "rep_local_var", filename=1)
+
+
+
+
+
 
 
 
