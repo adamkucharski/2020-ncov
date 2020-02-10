@@ -120,6 +120,7 @@ smc_model <- function(theta,nn,dt=1){
   Rep_local_traj = matrix(NA,ncol=1,nrow=ttotal)
   C_traj = matrix(NA,ncol=1,nrow=ttotal)
   Rep_traj = matrix(NA,ncol=1,nrow=ttotal)
+  E_traj = matrix(NA,ncol=1,nrow=ttotal)
   I_traj = matrix(NA,ncol=1,nrow=ttotal)
   beta_traj = matrix(NA,ncol=1,nrow=ttotal);
   w <- matrix(NA,nrow=nn,ncol=ttotal); w[,1] <- 1  # weights
@@ -189,6 +190,7 @@ smc_model <- function(theta,nn,dt=1){
   Rep_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports"]
   Rep_local_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"reports_local"]
   S_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"sus"]
+  E_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"exp2"] #+storeL[l_sample[ttotal],ttotal,"exp1"]
   I_traj[ttotal,] <- storeL[l_sample[ttotal],ttotal,"inf1"]+storeL[l_sample[ttotal],ttotal,"inf2"]
   beta_traj[ttotal,] <- simzeta[ttotal,l_sample[ttotal]]
 
@@ -199,6 +201,7 @@ smc_model <- function(theta,nn,dt=1){
     C_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"cases"]
     Rep_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"reports"]
     S_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"sus"]
+    E_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"exp2"]#+ storeL[l_sample[ii-1],ii-1,"exp1"]
     I_traj[ii-1,] <- storeL[l_sample[ii-1],ii-1,"inf1"]+ storeL[l_sample[ii-1],ii-1,"inf2"]
     beta_traj[ii-1,] <- simzeta[ii-1,l_sample[ii-1]]
   }
@@ -206,7 +209,7 @@ smc_model <- function(theta,nn,dt=1){
   # DEBUG  plot(Rep_traj[,1]-C_traj[,1])
 
 
-  return(list(S_trace=S_traj,C_local_trace=C_local_traj,Rep_local_trace=Rep_local_traj,C_trace=C_traj,Rep_trace=Rep_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
+  return(list(S_trace=S_traj,C_local_trace=C_local_traj,Rep_local_trace=Rep_local_traj,C_trace=C_traj,Rep_trace=Rep_traj,E_trace=E_traj,I_trace=I_traj,beta_trace=beta_traj,lik=likelihood0 ))
 
 
 }
@@ -237,7 +240,9 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
   repDiff_local <- storeL[,tt,"reports_local"] - storeL[,tt-1,"reports_local"]
   caseDiff <- storeL[,tt,"cases"] - storeL[,tt-1,"cases"]
   repDiff <- storeL[,tt,"reports"] - storeL[,tt-1,"reports"]
-  inf_prev <- storeL[,tt,"inf1"] + storeL[,tt,"inf2"]
+  
+  # Prevalence - scale by asymptomatics - second half only // storeL[,tt,"exp1"] + 
+  inf_prev <- storeL[,tt,"exp2"] + (storeL[,tt,"inf1"] + storeL[,tt,"inf2"])*(1-theta[["confirmed_prop"]])
     
   c_local_val <- pmax(0,case_localDiff)
   c_val <- pmax(0,caseDiff)
@@ -315,7 +320,7 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # - - -
   # Tally up likelihoods
-  # loglikSum_inf_onset
+  # loglikSum_flight_info
   loglikSum <- loglikSum_local_onset + loglikSum_inf_onset + loglikSum_local_conf + loglikSum_flight_info  #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 

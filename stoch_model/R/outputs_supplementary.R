@@ -36,7 +36,7 @@ dev.off()
 # par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
 
 MLE_check_2D(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
-               theta_tab1 = seq(0.002,0.03,0.002), theta_tab2 = seq(0.3,1,0.1),nn=1e3)
+               theta_tab1 = seq(0.002,0.03,0.002), theta_tab2 = seq(0.5,1,0.025),nn=1e3)
 
 profile_plot(p1_name = "local_rep_prop", p2_name = "confirmed_prop", filename=1)
 
