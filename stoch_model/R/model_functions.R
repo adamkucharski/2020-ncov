@@ -28,7 +28,9 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
   rep_rate_local <- theta[["report_local"]]*dt
   rep_rate <- theta[["report"]]*dt
   travel_frac <- travelF
-
+  prob_rep <- exp(-theta[["report"]]*theta[["recover"]]) # probability case is reported rather than recovers
+  prob_rep_local <- exp(-theta[["report_local"]]*theta[["recover"]]) # probability case is reported rather than recovers
+                                              
   for(ii in seq((t_start+dt),t_end,dt) ){
 
     # transitions
@@ -47,6 +49,7 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
     
     # Delay until reported
     W_to_Rep <- tr_waiting_t*rep_rate
+    
     W_to_Rep_local <- waiting_local_t*rep_rate_local
 
     # Process model for SEIR
@@ -59,13 +62,13 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
     infectious_t1 <- infectious_t1 + E2_to_I1 - I1_to_I2
     infectious_t2 <- infectious_t2 + I1_to_I2 - I2_to_R
 
-    # Case tracking
-    waiting_local_t <- waiting_local_t + E2_to_I1 - W_to_Rep_local
-    cases_local_t <- cases_local_t + E2_to_I1
+    # Case tracking - including removal of cases within Q compartment
+    waiting_local_t <- waiting_local_t + E2_to_I1*prob_rep_local - W_to_Rep_local
+    cases_local_t <- cases_local_t + E2_to_I1*prob_rep_local
     reports_local_t <- reports_local_t + W_to_Rep_local
 
-    tr_waiting_t <- tr_waiting_t + E2_to_I1_tr - W_to_Rep
-    cases_t <- cases_t + E2_to_I1_tr
+    tr_waiting_t <- tr_waiting_t + E2_to_I1_tr*prob_rep - W_to_Rep
+    cases_t <- cases_t + E2_to_I1_tr*prob_rep
     reports_t <- reports_t + W_to_Rep
   }
 
@@ -320,8 +323,8 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # - - -
   # Tally up likelihoods
-  # loglikSum_flight_info
-  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset + loglikSum_local_conf + loglikSum_flight_info  #+ loglikSum_int_conf #+ loglikSum_local_conf
+  # loglikSum_local_conf
+  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset  + loglikSum_local_conf + loglikSum_flight_info  #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }

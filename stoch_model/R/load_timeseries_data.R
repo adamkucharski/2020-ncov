@@ -140,11 +140,11 @@ case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range + pre_pe
 
 date_flights_out_1_japan <- as.Date("2020-01-29")
 date_flights_out_2_japan <- as.Date("2020-01-30")
-date_flights_out_3_japan <- as.Date("2020-01-31")
+date_flights_out_3_japan <- as.Date("2020-01-31") # AND KOREA
 date_flights_out_2_germany <- as.Date("2020-02-01")
 
 date_flights_out_1_singapore <- as.Date("2020-02-06")
-date_flights_out_1_malaysia <- as.Date("2020-02-04")
+date_flights_out_1_malaysia <- as.Date("2020-02-04") # AND BELGIUM
 date_flights_out_1_italy <- as.Date("2020-02-03")
 #date_flights_out_1_korea <- as.Date("2020-01-31")
 
@@ -174,9 +174,12 @@ prop_flight_1_malaysia <- c(2,107)
 prop_flight_1_italy <- c(1,56)
 prop_flight_1_korea <- c(1,368)
 
+prop_flight_1_belgium <- c(1,9)
+
 # Add together same day
 prop_flight_2_germany <- prop_flight_2_germany + prop_flight_1_korea
- 
+prop_flight_1_malaysia <- prop_flight_1_malaysia + prop_flight_1_belgium
+
 propn_flight_matrix[date_range==date_flights_out_1_japan,] <- prop_flight_1_japan
 propn_flight_matrix[date_range==date_flights_out_2_japan,] <- prop_flight_2_japan
 propn_flight_matrix[date_range==date_flights_out_3_japan,] <- prop_flight_3_japan
