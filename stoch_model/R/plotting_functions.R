@@ -99,7 +99,7 @@ plot_outputs <- function(filename="1"){
   # International confirmed
   Rep_quantile <- apply(Rep_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
 
-  R0_quantile <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
+  R0_quantile <- apply(R0_plot*S_plot/theta[["pop_travel"]],1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
   
   # Remove final few points (as estimation less reliable)
   S_quantileA <- S_quantile[,1:(ncol(R0_quantile)-cut_off)]
