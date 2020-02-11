@@ -6,7 +6,7 @@
 # Run bootstrap SMC 
 aa <- Sys.time()
 
-run_fits(rep_plot=20, # number of repeats
+run_fits(rep_plot=100, # number of repeats
          nn=2e3, #number of particles
          dt=t_step,
          filename="1"

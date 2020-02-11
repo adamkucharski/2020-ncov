@@ -138,6 +138,8 @@ case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range + pre_pe
 
 # Create flight prevalence series --------------------------------------------
 
+
+
 date_flights_out_1_japan <- as.Date("2020-01-29")
 date_flights_out_2_japan <- as.Date("2020-01-30")
 date_flights_out_3_japan <- as.Date("2020-01-31") # AND KOREA
@@ -168,6 +170,8 @@ prop_flight_1_japan <- c(4,206)
 prop_flight_2_japan <- c(2,210)
 prop_flight_3_japan <- c(2,149)
 prop_flight_2_germany <- c(2,120)
+
+
 
 prop_flight_1_singapore <- c(4,91)
 prop_flight_1_malaysia <- c(2,107)
