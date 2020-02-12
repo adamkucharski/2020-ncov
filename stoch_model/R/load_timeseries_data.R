@@ -6,17 +6,18 @@ omit_recent <- 5
 omit_conf <- 0
 
 # Set up start/end dates
+new_date_hubei <- max(data_hubei_Feb$date)
 start_date <- as.Date("2019-11-22") # first case
 
 #end_date <- max(case_data_in$date) # omit recent day?
-end_date <- as.Date("2020-03-01") # period to forecast ahead
+end_date <- new_date_hubei #as.Date("2020-03-01") # period to forecast ahead
 date_range <- seq(start_date,end_date,1)
 
 # When restrictions started
 wuhan_travel_restrictions <- as.Date("2020-01-23")
 wuhan_travel_time <- as.numeric(wuhan_travel_restrictions - start_date + 1)
 
-fix_r0_tt <- as.numeric(max(data_hubei_Feb$date) - start_date + 1) #as.Date("2020-01-25") as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
+fix_r0_tt <- as.numeric(new_date_hubei - start_date + 1) #as.Date("2020-01-25") as.numeric(wuhan_travel_restrictions - start_date + 1) # set noise = 0 after this period of fitting
 
 
 # Only use top twenty exports
@@ -142,11 +143,11 @@ case_data_wuhan_2_scale <-1-exp(-pmax(0,final_time_wuhan_2 - date_range + pre_pe
 
 date_flights_out_1_japan <- as.Date("2020-01-29")
 date_flights_out_2_japan <- as.Date("2020-01-30")
-date_flights_out_3_japan <- as.Date("2020-01-31") # AND KOREA
+date_flights_out_3_japan <- as.Date("2020-01-31") # SAME AS KOREA
 date_flights_out_2_germany <- as.Date("2020-02-01")
 
 date_flights_out_1_singapore <- as.Date("2020-02-06")
-date_flights_out_1_malaysia <- as.Date("2020-02-04") # AND BELGIUM
+date_flights_out_1_malaysia <- as.Date("2020-02-04") # SAME AS BELGIUM
 date_flights_out_1_italy <- as.Date("2020-02-03")
 #date_flights_out_1_korea <- as.Date("2020-01-31")
 
@@ -155,23 +156,15 @@ propn_flight_matrix <- matrix(NA,nrow=length(date_range),ncol=2)
 flight_report[date_range == date_flights_out_1_japan |
               date_range == date_flights_out_2_japan | 
               date_range == date_flights_out_3_japan |
-              date_range == date_flights_out_2_germany] <- 1
-
-#proportion_on_flight <- c(10,750)
-
-#prop_flight_1_japan <- c(3,206)
-
-# combining the two japan flights on the same day
-#prop_flight_1_japan <- c(8,565)
-#prop_flight_2_japan <- c(4,296)
-
+              date_range == date_flights_out_2_germany |
+              date_range == date_flights_out_1_singapore | 
+              date_range == date_flights_out_1_malaysia |
+              date_range == date_flights_out_1_italy  ] <- 1
 
 prop_flight_1_japan <- c(4,206)
 prop_flight_2_japan <- c(2,210)
 prop_flight_3_japan <- c(2,149)
 prop_flight_2_germany <- c(2,120)
-
-
 
 prop_flight_1_singapore <- c(4,91)
 prop_flight_1_malaysia <- c(2,107)

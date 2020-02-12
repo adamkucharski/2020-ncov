@@ -43,11 +43,11 @@ profile_plot(p1_name = "local_rep_prop", p2_name = "confirmed_prop", filename=1)
 
 # Beta vol parameter
 
-MLE_check_2D(p1_name = "betavol", p2_name = "rep_local_var",
-             theta_tab1 = seq(0.1,0.6,0.1), theta_tab2 = seq(0.25,2,0.25),nn=1e3)
+MLE_check_2D(p1_name = "betavol", p2_name = "local_rep_prop",
+             theta_tab1 = seq(0.05,0.6,0.05), theta_tab2 = seq(0.002,0.02,0.002),nn=1e3)
 
 
-profile_plot(p1_name = "betavol", p2_name = "rep_local_var", filename=1)
+profile_plot(p1_name = "betavol", p2_name = "local_rep_prop", filename=1)
 
 
 

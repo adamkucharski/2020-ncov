@@ -311,20 +311,24 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
     prob_inf <- pmax(0,inf_prev/theta[["pop_travel"]]) # ensure >=0
     
-    #print(c(flight_prop_tt[1],flight_prop_tt[2],prob_inf[1]))
+    #print(c(flight_prop_tt[1],flight_prop_tt[2],prob_inf[1])) DEBUG
     
     loglikSum_flight_info <- dbinom(flight_prop_tt[1],flight_prop_tt[2],prob=prob_inf,log=T)
 
+    loglikSum_flight_info[is.na(loglikSum_flight_info)] <- -Inf # Set NA = -Inf
   }else{
     loglikSum_flight_info <- 0
   }
   
-  
+  # print(c(loglikSum_local_onset[1],
+  # loglikSum_inf_onset[1],
+  # loglikSum_local_conf[1],
+  # loglikSum_flight_info[1]))
 
   # - - -
   # Tally up likelihoods
-  # loglikSum_local_conf
-  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset  + loglikSum_local_conf + loglikSum_flight_info  #+ loglikSum_int_conf #+ loglikSum_local_conf
+  # loglikSum_local_conf   
+  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset  + loglikSum_local_conf #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }
