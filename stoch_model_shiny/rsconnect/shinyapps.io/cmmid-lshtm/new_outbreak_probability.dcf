@@ -1,0 +1,12 @@
+name: new_outbreak_probability
+title: new_outbreak_probability
+username:
+account: cmmid-lshtm
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1749637
+bundleId: 2770358
+url: https://cmmid-lshtm.shinyapps.io/new_outbreak_probability/
+when: 1580693465.67671
+asMultiple: FALSE
+asStatic: FALSE

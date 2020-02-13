@@ -2,7 +2,7 @@
 # Supplementary plots --------------------------------------------------------------
 
 # - - - - - - - - - - 
-# Parameter grid search for relative reporting outside Wuhan
+# 1D parameter grid search for relative reporting outside Wuhan
 
 par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
 
@@ -17,7 +17,7 @@ dev.copy(png,paste("plots/param_rel_1.png",sep=""),units="cm",width=10,height=10
 dev.off()
 
 # - - - - - - - - - - 
-# Parameter grid search for beta volatility
+# 1D parameter grid search for beta volatility (DEPRECATED)
 
 par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
 
@@ -28,6 +28,31 @@ lines(c(0,1e2),c(1,1)*(max(s_out$lik)-1.92),lty=2)
 
 dev.copy(png,paste("plots/param_vol_1.png",sep=""),units="cm",width=10,height=10,res=150)
 dev.off()
+
+
+# - - - - - - - - - - 
+# 2D parameter grid search for proportion confirmed and relative reporting outside Wuhan
+
+# par(mfrow=c(1,1),mar=c(3,3,1,1),mgp=c(2,0.7,0))
+
+MLE_check_2D(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
+               theta_tab1 = seq(0.002,0.03,0.002), theta_tab2 = seq(0.5,1,0.025),nn=1e3)
+
+profile_plot(p1_name = "local_rep_prop", p2_name = "confirmed_prop", filename=1)
+
+
+# Beta vol parameter
+
+MLE_check_2D(p1_name = "betavol", p2_name = "local_rep_prop",
+             theta_tab1 = seq(0.05,0.6,0.05), theta_tab2 = seq(0.002,0.02,0.002),nn=1e3)
+
+
+profile_plot(p1_name = "betavol", p2_name = "local_rep_prop", filename=1)
+
+
+
+
+
 
 
 

@@ -27,8 +27,8 @@ if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
 
 # - - -
 # Load datasets
-#travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_mobs.csv"))
-travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_worldpop.csv"))
+travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_mobs.csv"))
+#travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_worldpop.csv"))
 international_conf_data_in <- read_csv(paste0(dropbox_path,"data/international_case_data.csv"))
 international_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_WHO_report.csv"))
 china_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_bioRvix_Liu_et_al.csv"))
@@ -61,8 +61,6 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
             onset_prop=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop","value"]), # propn onsets known
             travel_frac=NA
 )
-
-#222.0734
 
 theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]] # Estimate fraction that travel
 

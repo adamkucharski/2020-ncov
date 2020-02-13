@@ -11,6 +11,7 @@ library(magrittr)
 library(coda)
 library(tidyverse)
 library(rootSolve)
+library(mgcv)
   
 registerDoMC(4)  #change the 2 to your number of CPU cores
 
@@ -27,16 +28,21 @@ if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
 
 # - - -
 # Load datasets
-#travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_mobs.csv"))
-travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_worldpop.csv"))
+travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_mobs.csv"))
+#travel_data_mobs <- read_csv(paste0(dropbox_path,"data/connectivity_data_worldpop.csv"))
 international_conf_data_in <- read_csv(paste0(dropbox_path,"data/international_case_data.csv"))
 international_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_WHO_report.csv"))
 china_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_bioRvix_Liu_et_al.csv"))
 wuhan_onset_data_in <- read_csv(paste0(dropbox_path,"data/time_series_data_lancet_huang_et_al.csv"))
 wuhan_onset_2020_01_30 <- read_csv(paste0(dropbox_path,"data/time_series_data_qui_li_nejm_wuhan.csv"))
 wuhan_conf_data_in <- read_csv(paste0(dropbox_path,"data/time_series_HKU_Wuhan.csv"))
+
+data_hubei_Feb <- read_csv(paste0(dropbox_path,"data/hubei_confirmed_cases.csv"))
+
 case_data_in <- international_conf_data_in
 travel_data <- travel_data_mobs
+
+t_step <- 0.25
 
 # - - -
 # Load model and plotting functions
@@ -59,10 +65,14 @@ theta <- c( r0=as.numeric(thetaR_IC[thetaR_IC$param=="r0","value"]), # note this
             pop_travel=as.numeric(thetaR_IC[thetaR_IC$param=="population_travel","value"]),
             local_rep_prop=as.numeric(thetaR_IC[thetaR_IC$param=="local_rep_prop","value"]), # local propn reported
             onset_prop=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop","value"]), # propn onsets known
-            travel_frac=NA
+            onset_prop_int=as.numeric(thetaR_IC[thetaR_IC$param=="onset_prop_int","value"]), # propn onsets known internationally
+            confirmed_prop=as.numeric(thetaR_IC[thetaR_IC$param=="confirmed_prop","value"]), # propn confirmed reported
+            travel_frac=NA,
+            r0_decline =as.numeric(thetaR_IC[thetaR_IC$param=="r0_decline","value"]), # decline in R0 for scenario analysis
+            rep_local_var =as.numeric(thetaR_IC[thetaR_IC$param=="rep_local_var","value"]), # dispersion in local reporting confirmed cases
+            pre_symp =as.numeric(thetaR_IC[thetaR_IC$param=="pre_symp","value"]) # transmission in 2nd half of Erland period (binary term)
 )
 
-#222.0734
 
 theta[["travel_frac"]] <- theta[["passengers"]]/theta[["pop_travel"]] # Estimate fraction that travel
 
@@ -74,7 +84,7 @@ theta_initNames <- c("sus","tr_exp1","tr_exp2","exp1","exp2","inf1","inf2","tr_w
 # - - -
 # Load timeseries -  specify travel data being used
 # NOTE: USES REPORTING DELAY AS INPUT
-source("R/load_timeseries_data.R",local=TRUE)
+source("R/load_timeseries_data.R")
 
 
 
@@ -84,8 +94,9 @@ source("R/load_timeseries_data.R",local=TRUE)
 # Run SMC and check likelihood
 output_smc <- smc_model(theta,
                         nn=1e3, # number of particles
-                        dt=0.25
+                        dt=t_step
 )
+
 output_smc$lik
 
 # Run main outputs --------------------------------------------------------------
