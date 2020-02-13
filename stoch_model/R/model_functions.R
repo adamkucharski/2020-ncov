@@ -48,6 +48,7 @@ process_model <- function(t_start,t_end,dt,theta,simTab,simzetaA,travelF){
     I2_to_R <- infectious_t2*rec_rate
     
     # Delay until reported
+    W_to_Recover <- tr_waiting_t*rec_rate/2
     W_to_Rep <- tr_waiting_t*rep_rate
     
     W_to_Rep_local <- waiting_local_t*rep_rate_local

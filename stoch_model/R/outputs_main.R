@@ -4,20 +4,16 @@
 
 # - - -
 # Run bootstrap SMC 
-aa <- Sys.time()
-
-run_fits(rep_plot=50, # number of repeats
-         nn=2e3, #number of particles
-         dt=t_step,
-         filename="1"
+run_fits(rep_plot=200, # number of repeats
+         nn=1e3, #number of particles
+         dt=0.25,
+         filename="2"
 )
 
-aa2 <- Sys.time() - aa
-
 # Output plots
-plot_outputs(filename="1")
+plot_outputs(filename="2") # Figure 2
 
-#plot_dispersion(filename="1")
+plot_dispersion(filename="2") # Figure 3
 
 
 # Run models --------------------------------------------------------------
