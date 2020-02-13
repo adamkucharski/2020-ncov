@@ -42,7 +42,7 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
       S_plot[,kk] <- output_smc$S_trace
       case_local_pos <- theta[["confirmed_prop"]]*theta[["local_rep_prop"]]*(output_smc$C_local_trace - c(0,head(output_smc$C_local_trace,-1)))
       C_local_plot[,kk] <- rpois(length(case_local_pos),lambda=case_local_pos)
-      rep_local_pos <- theta[["confirmed_prop"]]*theta[["local_rep_prop"]]*(output_smc$Rep_local_trace - c(0,head(output_smc$Rep_local_trace,-1)))
+      rep_local_pos <- theta[["confirmed_prop"]]*(output_smc$Rep_local_trace - c(0,head(output_smc$Rep_local_trace,-1))) # ALL CASES: theta[["local_rep_prop"]]*
       Rep_local_plot[,kk] <- rpois(length(rep_local_pos),lambda=rep_local_pos)
       
       C_plot[,kk] <- theta[["confirmed_prop"]]*fit_int_cases(output_smc$C_trace - c(0,head(output_smc$C_trace,-1)))
@@ -99,7 +99,7 @@ plot_outputs <- function(filename="1"){
   # International confirmed
   Rep_quantile <- apply(Rep_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
 
-  R0_quantile <- apply(R0_plot*S_plot/theta[["pop_travel"]],1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))})
+  R0_quantile <- apply(R0_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) #*S_plot/theta[["pop_travel"]]
   
   # Remove final few points (as estimation less reliable)
   S_quantileA <- S_quantile[,1:(ncol(R0_quantile)-cut_off)]
@@ -116,7 +116,7 @@ plot_outputs <- function(filename="1"){
   # Calculate daily incidence
   #Case_diff_quantile <- Case_quantile[,1:ncol(Case_quantile)] - cbind(c(0,0,0),Case_quantile[,1:(ncol(Case_quantile)-1)])
   
-  par(mar=c(2,3,1,1),mgp=c(2,0.7,0)) #mfrow=c(4,2),
+  par(mar=c(2,3,1,1),mgp=c(2,0.55,0)) #mfrow=c(4,2),
   layout(matrix(c(1,1,1,2,3,4,5,6,7), 3, 3, byrow = TRUE))
   
   # Plot outputs
@@ -198,25 +198,6 @@ plot_outputs <- function(filename="1"){
   #   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,10),col="red")
   #   title(LETTERS[letR],adj=0); letR = letR + 1
   
-  # Plot case total predictions
-  ym1 <- 5000
-  plot(date_range,Rep_local_quantile[1,],col="white",ylim=c(0,ym1),xlim=c(xMin2,xMax),xlab="",ylab="new confirmed cases in Wuhan")
-  
-  polygon(c(date_rangeF,rev(date_rangeF)),c(yyF,rev(yyF+1e5)),lty=0,col=rgb(0.9,0.9,0.9))
-  
-  polygon(c(date_range,rev(date_range)),c(Rep_local_quantile[2,],rev(Rep_local_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
-  polygon(c(date_range,rev(date_range)),c(Rep_local_quantile[1,],rev(Rep_local_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
-  lines(date_range,Rep_local_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
-  
-  lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
-  #text(labels="travel restrictions",x=wuhan_travel_restrictions+0.5,y=0.9*ym1,adj=0,col="red")
-  
-  points(cases_Wuhan$date,cases_Wuhan$new_case,pch=19)
-  
-  text(labels="model",x=xMin2,y=0.9*ym1,adj=0,col="blue")
-  text(labels="data",x=xMin2,y=0.8*ym1,adj=0,col="black")
-  
-  title(LETTERS[letR],adj=0); letR = letR + 1
   
   # - - -
   # Plot local cases confirmed
@@ -246,37 +227,37 @@ plot_outputs <- function(filename="1"){
   cex.f <- 0.8
   # Japan flight 1
   CI_flight_japan_1 <- bin_conf(prop_flight_1_japan[1],prop_flight_1_japan[2])
-  points(date_flights_out_1_japan,CI_flight_japan_1[1],pch=1,cex=cex.f)
+  points(date_flights_out_1_japan,CI_flight_japan_1[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_1_japan,date_flights_out_1_japan),c(CI_flight_japan_1[2],CI_flight_japan_1[3]))
   
   # Japan flight 2
   CI_flight_japan_2 <- bin_conf(prop_flight_2_japan[1],prop_flight_2_japan[2])
-  points(date_flights_out_2_japan,CI_flight_japan_2[1],pch=1,cex=cex.f)
+  points(date_flights_out_2_japan,CI_flight_japan_2[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_2_japan,date_flights_out_2_japan),c(CI_flight_japan_2[2],CI_flight_japan_2[3]))
   
   # Japan flight 3
   CI_flight_japan_3 <- bin_conf(prop_flight_3_japan[1],prop_flight_3_japan[2])
-  points(date_flights_out_3_japan,CI_flight_japan_3[1],pch=1,cex=cex.f)
+  points(date_flights_out_3_japan,CI_flight_japan_3[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_3_japan,date_flights_out_3_japan),c(CI_flight_japan_3[2],CI_flight_japan_3[3]))
   
   # Germany + Korea flight
   CI_flight <- bin_conf(prop_flight_2_germany[1],prop_flight_2_germany[2])
-  points(date_flights_out_2_germany,CI_flight[1],pch=1,cex=cex.f)
+  points(date_flights_out_2_germany,CI_flight[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_2_germany,date_flights_out_2_germany),c(CI_flight[2],CI_flight[3]))
   
   # Singapore flight
   CI_flight <- bin_conf(prop_flight_1_singapore[1],prop_flight_1_singapore[2])
-  points(date_flights_out_1_singapore,CI_flight[1],pch=1,cex=cex.f)
+  points(date_flights_out_1_singapore,CI_flight[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_1_singapore,date_flights_out_1_singapore),c(CI_flight[2],CI_flight[3]))
   
   # Italy flight
   CI_flight <- bin_conf(prop_flight_1_italy[1],prop_flight_1_italy[2])
-  points(date_flights_out_1_italy,CI_flight[1],pch=1,cex=cex.f)
+  points(date_flights_out_1_italy,CI_flight[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_1_italy,date_flights_out_1_italy),c(CI_flight[2],CI_flight[3]))
   
   # Malaysia flight
   CI_flight <- bin_conf(prop_flight_1_malaysia[1],prop_flight_1_malaysia[2])
-  points(date_flights_out_1_malaysia,CI_flight[1],pch=1,cex=cex.f)
+  points(date_flights_out_1_malaysia,CI_flight[1],pch=19,cex=cex.f)
   lines(c(date_flights_out_1_malaysia,date_flights_out_1_malaysia),c(CI_flight[2],CI_flight[3]))
   
   
@@ -287,9 +268,37 @@ plot_outputs <- function(filename="1"){
   title(LETTERS[letR],adj=0); letR = letR + 1
 
   
+  # Plot case total predictions
+  ym1 <- 50000
+  plot(date_range,Rep_local_quantile[1,],col="white",ylim=c(0,ym1),xlim=c(xMin1,xMax),xlab="",ylab="new cases in Wuhan")
+  
+  polygon(c(date_rangeF,rev(date_rangeF)),c(yyF,rev(yyF+1e5)),lty=0,col=rgb(0.9,0.9,0.9))
+  
+  polygon(c(date_range,rev(date_range)),c(Rep_local_quantile[2,],rev(Rep_local_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
+  polygon(c(date_range,rev(date_range)),c(Rep_local_quantile[1,],rev(Rep_local_quantile[5,])),lty=0,col=rgb(0,0.3,1,0.2))
+  lines(date_range,Rep_local_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
+  
+  lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
+  #text(labels="travel restrictions",x=wuhan_travel_restrictions+0.5,y=0.9*ym1,adj=0,col="red")
+  
+  par(new=TRUE)
+  ym1a <- 5000
+  #plot(gbs.data$date,gbs.data$GBS,ylim=c(0,20),yaxs="i",lwd=2,type="l",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",col=col.list[[3]])
+  plot(cases_Wuhan$date,cases_Wuhan$new_case,pch=1,xaxt="n",bty="l",yaxt="n",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",ylim=c(0,ym1a))
+  axis(4)
+  mtext("confirmed", side=4, cex=0.7,line=-1)
+  
+  #plot(cases_Wuhan$date,cases_Wuhan$new_case,pch=1)
+  
+  text(labels="model",x=xMin1,y=0.9*ym1,adj=0,col="blue")
+  text(labels="data",x=xMin1,y=0.8*ym1,adj=0,col="black")
+  
+  title(LETTERS[letR],adj=0); letR = letR + 1
+  
+  
   # Plot international cases confirmed
   ym1 <- 10
-  plot(date_range,case_time,pch=19,ylim=c(0,ym1),xlim=c(xMin1,xMax),ylab="new international exports confirmed",col="white")
+  plot(date_range,case_time,pch=19,ylim=c(0,ym1),xlim=c(xMin1,xMax),ylab="",col="white")
   polygon(c(date_rangeF,rev(date_rangeF)),c(yyF,rev(yyF+1e5)),lty=0,col=rgb(0.9,0.9,0.9))
   
   polygon(c(date_range,rev(date_range)),c(Rep_quantile[2,],rev(Rep_quantile[4,])),lty=0,col=rgb(0,0.3,1,0.35))
@@ -297,11 +306,15 @@ plot_outputs <- function(filename="1"){
   lines(date_range,Rep_quantile[3,],type="l",col=rgb(0,0,1),xaxt="n",yaxt="n",xlab="",ylab="")
   points(date_range,case_time,pch=1)
   
+  title(ylab="new international exports confirmed", line=1.5, cex.lab=1)
+  
   text(labels="model",x=xMin1,y=0.9*ym1,adj=0,col="blue")
   text(labels="data (non-fitted)",x=xMin1,y=0.8*ym1,adj=0,col="black")
   
   lines(c(wuhan_travel_restrictions,wuhan_travel_restrictions),c(0,1e6),col="red")
   title(LETTERS[letR],adj=0); letR = letR +1
+  
+
   
   # Plot international confirmations vs expected
   

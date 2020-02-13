@@ -4,16 +4,16 @@
 
 # - - -
 # Run bootstrap SMC 
-run_fits(rep_plot=200, # number of repeats
-         nn=1e3, #number of particles
+run_fits(rep_plot=20, # number of repeats
+         nn=2e3, #number of particles
          dt=0.25,
-         filename="2"
+         filename="1"
 )
 
 # Output plots
-plot_outputs(filename="2") # Figure 2
+plot_outputs(filename="1") # Figure 2
 
-plot_dispersion(filename="2") # Figure 3
+# plot_dispersion(filename="1") # Figure 3
 
 
 # Run models --------------------------------------------------------------
