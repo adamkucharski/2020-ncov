@@ -523,9 +523,12 @@ numerical_solver <- function(r0, k){
 
 # Plot profile likelihoods ------------------------------------------------
 
-profile_plot <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop", filename=1){
+profile_plot <- function(p1_name = "local_rep_prop", 
+                         p2_name = "confirmed_prop", 
+                         p3_name = "betavol", 
+                         filename=1){
   
-  
+  # filename=1
   s_out <- read_csv(paste0("outputs/param_search_",filename,".csv"))
   s_out <- s_out %>% mutate(param_s = NA)
   #s_out[max(s_out$lik)==s_out$lik,] # maximum likelihood
@@ -535,11 +538,12 @@ profile_plot <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
   # - - -
   # Calculate profiles
     
-  for(kk in 1:2){ # iterate over parameters
+  for(kk in 1:3){ # iterate over parameters
     
     # Define parameter of interest
     if(kk==1){s_out$param_s <- s_out$param1}
     if(kk==2){s_out$param_s <- s_out$param2}
+    if(kk==3){s_out$param_s <- s_out$param3}
     
     # Iterate over values and extract profile:
     unique_val <- unique(s_out$param_s)
@@ -569,7 +573,8 @@ profile_plot <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
   
     text(x=min(max_prof2$param),y=max(max_prof2$lik)+0.5, labels = paste0(calc_95[1]," (95% CI: ",calc_95[2],"-",calc_95[3],")"),adj=0)
     
-    dev.copy(png,paste("plots/param_rel_",kk,".png",sep=""),units="cm",width=10,height=10,res=150)
+    #dev.copy(png,paste("plots/param_rel_",kk,".png",sep=""),units="cm",width=10,height=10,res=150)
+    dev.copy(pdf,paste("plots/param_rel_",kk,".pdf",sep=""),width=5,height=3)
     dev.off()
     
   } # end param loop

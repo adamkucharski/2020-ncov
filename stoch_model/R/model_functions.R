@@ -468,8 +468,60 @@ MLE_check_2D <- function(p1_name = "local_rep_prop", p2_name = "confirmed_prop",
   
 }
 
-# Resample parameters -----------------------------------------------------
+# MLE grid search -  2D ---------------------------------------------------------
 
+MLE_check_3D <- function(p1_name = "local_rep_prop", 
+                         p2_name = "confirmed_prop", 
+                         p3_name = "betavol", 
+                         theta_tab1, 
+                         theta_tab2,
+                         theta_tab3,
+                         nn=1e3,
+                         filename = 1){
+  
+  # p1_name = "local_rep_prop"; p2_name = "confirmed_prop"; p3_name = "betavol"; theta_tab1 = seq(0.01,0.05,0.02); theta_tab2 = seq(0.6,1,0.2); theta_tab3 = seq(0.1,0.3,0.1)
+  
+  store_lik <- NULL
+  
+  out_fit <- foreach(ii = 1:length(theta_tab1)) %dopar% {
+  
+  #for(ii in 1:length(theta_tab1)){
+    
+      for(jj in 1:length(theta_tab2)){
+        
+        for(kk in 1:length(theta_tab3)){
+        
+          theta[[p1_name]] <- theta_tab1[ii]
+          theta[[p2_name]] <- theta_tab2[jj]
+          theta[[p3_name]] <- theta_tab3[kk]
+          
+          # Run SMC and output likelihooda
+          output_smc <- smc_model(theta,
+                                  nn=1e3 # number of particles
+          )
+          store_lik <- rbind(store_lik,c(theta_tab1[ii],theta_tab2[jj],theta_tab3[kk],output_smc$lik))
+          
+        }
+      } 
+    store_lik
+  }
+  
+  # Collate results
+  
+  store_lik <- NULL
+  for(ii in 1:length(theta_tab1)){
+    
+    store_lik <- rbind(store_lik,out_fit[[ii]])
+    
+  }
+  
+  
+  colnames(store_lik) <- c("param1","param2","param3","lik")
+  store_lik <- as_tibble(store_lik)
+  
+  write_csv(store_lik,paste0("outputs/param_search_",filename,".csv"))
+  
+}
 
 # Compute acceptance probability ------------------------------------------
 
