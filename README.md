@@ -16,7 +16,7 @@ Data loading and model run script is in `scripts/main_model.r`. Calls the follow
 
 > `outputs_main.R` - Run main model outputs
 
-The code and data used for [V1 of our pre-print on early transmission dynamics](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1) can be found in `stoch_model_V1_paper`, with same paths as above.
+The code and data used for V[n] of [our pre-print on early transmission dynamics](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1) can be found in `stoch_model_V[n]_paper`, with same paths as above.
 
 
 #### Reference
