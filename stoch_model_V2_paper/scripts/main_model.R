@@ -20,7 +20,7 @@ rm(list=ls(all=TRUE))
 # - - -
 # Set user-specific directory path and load datasets
 if(Sys.info()["user"]=="adamkuchars" | Sys.info()["user"]=="adamkucharski") {
-  setwd("~/Documents/GitHub/2020-nCov/stoch_model/")
+  setwd("~/Documents/GitHub/2020-nCov/stoch_model_V2_paper")
   dropbox_path <- ""
 }
 

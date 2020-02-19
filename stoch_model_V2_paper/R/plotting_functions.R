@@ -30,6 +30,7 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
   S_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   I_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_local_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
+  C_local_plot_raw = matrix(NA,ncol=rep_plot,nrow=t_period)
   Rep_local_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   Rep_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
@@ -42,6 +43,10 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
       S_plot[,kk] <- output_smc$S_trace
       case_local_pos <- theta[["confirmed_prop"]]*theta[["local_rep_prop"]]*(output_smc$C_local_trace - c(0,head(output_smc$C_local_trace,-1)))
       C_local_plot[,kk] <- rpois(length(case_local_pos),lambda=case_local_pos)
+      
+      case_local_pos <- theta[["confirmed_prop"]]*(output_smc$C_local_trace - c(0,head(output_smc$C_local_trace,-1)))
+      C_local_plot_raw[,kk] <- rpois(length(case_local_pos),lambda=case_local_pos)
+      
       rep_local_pos <- theta[["confirmed_prop"]]*(output_smc$Rep_local_trace - c(0,head(output_smc$Rep_local_trace,-1))) # ALL CASES: theta[["local_rep_prop"]]*
       Rep_local_plot[,kk] <- rpois(length(rep_local_pos),lambda=rep_local_pos)
       
@@ -55,6 +60,7 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
     S_plot,
     I_plot,
     C_local_plot,
+    C_local_plot_raw,
     Rep_local_plot,
     C_plot,
     Rep_plot,
@@ -78,6 +84,7 @@ plot_outputs <- function(filename="1"){
   S_plot = S_plot[,!is.na(S_plot[t_period,])]
   I_plot = I_plot[,!is.na(I_plot[t_period,])]
   C_local_plot = C_local_plot[,!is.na(C_local_plot[t_period,])]
+  C_local_plot_raw = C_local_plot_raw[,!is.na(C_local_plot_raw[t_period,])] # output raw cases
   Rep_local_plot = Rep_local_plot[,!is.na(Rep_local_plot[t_period,])]
   C_plot = C_plot[,!is.na(C_plot[t_period,])]
   Rep_plot = Rep_plot[,!is.na(Rep_plot[t_period,])]
@@ -90,6 +97,14 @@ plot_outputs <- function(filename="1"){
   # Local cases
   Case_local_quantile <- apply(C_local_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
   Case_local_quantile_onset <- theta[["onset_prop"]]*Case_local_quantile
+  
+  # DEBUG - output data 
+  # 
+  Case_local_quantile_raw <- apply(C_local_plot_raw,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
+  aa <- cbind(date_range,round(Case_local_quantile_raw[3,]))
+  aa <- as_tibble(aa); names(aa) <- c("date","cases"); aa$date <- as.Date(aa$date,origin="1970-01-01")
+  write_csv(aa,"outputs/case_model.csv")
+  
   
   Rep_local_quantile <- apply(Rep_local_plot,1,function(x){quantile(x,c(0.025,0.25,0.5,0.75,0.975))}) 
   
