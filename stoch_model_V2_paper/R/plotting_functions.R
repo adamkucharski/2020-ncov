@@ -478,6 +478,10 @@ r0_value_output <- function(filename="1"){
   
   # filename="1"
   
+  write_csv(as_tibble(R0_plot),"out_R0.csv")
+  
+  write_csv(as_tibble(date_range),"out_date.csv")
+  
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
   
   # Extract R0 estimates
