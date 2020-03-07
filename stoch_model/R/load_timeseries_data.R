@@ -201,6 +201,8 @@ for(ii in 1:length(date_range)){
 
 case_data_wuhan_conf_time[date_range>cutoff_time_wuhan | date_range<cutoff_min_wuhan] <- NA # omit all old and recent points
 
+# Remove outlier:
+case_data_wuhan_conf_time[case_data_wuhan_conf_time>1e4] <- NA
 
 # NEED REPORTING PARAMETER
 

@@ -29,6 +29,8 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
   
   S_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   I_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
+  EE_out_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
+  II_out_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_local_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
   C_local_plot_raw = matrix(NA,ncol=rep_plot,nrow=t_period)
   Rep_local_plot = matrix(NA,ncol=rep_plot,nrow=t_period)
@@ -39,6 +41,9 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
   for(kk in 1:rep_plot){
     output_smc <- out_rep[[kk]]
     if(output_smc$lik != - Inf){
+      EE_out_plot[,kk] <- output_smc$E_trace 
+      II_out_plot[,kk] <- output_smc$I_trace
+      
       I_plot[,kk] <- output_smc$E_trace + output_smc$I_trace*(1-theta[["confirmed_prop"]])
       S_plot[,kk] <- output_smc$S_trace
       case_local_pos <- theta[["confirmed_prop"]]*theta[["local_rep_prop"]]*(output_smc$C_local_trace - c(0,head(output_smc$C_local_trace,-1)))
@@ -59,6 +64,8 @@ run_fits <- function(rep_plot,nn,cut_off,dt,filename="1"){
   save(
     S_plot,
     I_plot,
+    EE_out_plot,
+    II_out_plot,
     C_local_plot,
     C_local_plot_raw,
     Rep_local_plot,
@@ -79,6 +86,11 @@ plot_outputs <- function(filename="1"){
   cut_off <- 0 #end_date - as.Date("2020-01-23")
   
   load(paste0("outputs/bootstrap_fit_",filename,".RData"))
+  
+  
+  # write_csv(as_tibble(date_range[date_range<=as.Date("2020-01-23")]),"outputs/posterior_dates.csv")
+  # write_csv(as_tibble(EE_out_plot[date_range<=as.Date("2020-01-23"),]),"outputs/posterior_E.csv")
+  # write_csv(as_tibble(II_out_plot[date_range<=as.Date("2020-01-23"),]),"outputs/posterior_I.csv")
   
   # Remove NA fits
   S_plot = S_plot[,!is.na(S_plot[t_period,])]
@@ -299,7 +311,7 @@ plot_outputs <- function(filename="1"){
   par(new=TRUE)
   ym1a <- 5000
   #plot(gbs.data$date,gbs.data$GBS,ylim=c(0,20),yaxs="i",lwd=2,type="l",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",col=col.list[[3]])
-  plot(cases_Wuhan$date,cases_Wuhan$new_case,pch=1,xaxt="n",bty="l",yaxt="n",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",ylim=c(0,ym1a))
+  plot(cases_Wuhan$date,cases_Wuhan$new_case,pch=1,xaxt="n",xlim=c(xMin1,xMax),bty="l",yaxt="n",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",ylim=c(0,ym1a))
   axis(4)
   mtext("confirmed", side=4, cex=0.7,line=-1)
   

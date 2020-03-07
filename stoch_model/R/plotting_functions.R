@@ -284,7 +284,7 @@ plot_outputs <- function(filename="1"){
   par(new=TRUE)
   ym1a <- 5000
   #plot(gbs.data$date,gbs.data$GBS,ylim=c(0,20),yaxs="i",lwd=2,type="l",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",col=col.list[[3]])
-  plot(cases_Wuhan$date,cases_Wuhan$new_case,pch=1,xaxt="n",bty="l",yaxt="n",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",ylim=c(0,ym1a))
+  plot(cases_Wuhan$date,cases_Wuhan$new_case,pch=1,xlim=c(xMin1,xMax),xaxt="n",bty="l",yaxt="n",xaxt="n",bty="l",yaxt="n",xlab="",ylab="",ylim=c(0,ym1a))
   axis(4)
   mtext("confirmed", side=4, cex=0.7,line=-1)
   

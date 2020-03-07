@@ -269,6 +269,9 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
     #loglikSum_local_conf <- dpois(local_case_data_conf_tt,lambda = expected_val,log=T)
     
     loglikSum_local_conf <- dnbinom(x=local_case_data_conf_tt,mu=expected_val,size=1/theta[["rep_local_var"]],log=T)
+  
+    #print(loglikSum_local_conf[1])
+    
   }else{
     loglikSum_local_conf <- 0
   }
@@ -327,8 +330,10 @@ AssignWeights <- function(data_list,storeL,nn,theta,tt){
 
   # - - -
   # Tally up likelihoods
+  
+
   # loglikSum_local_conf   
-  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset + loglikSum_flight_info #+ loglikSum_local_conf #+ loglikSum_int_conf #+ loglikSum_local_conf
+  loglikSum <- loglikSum_local_onset + loglikSum_inf_onset + loglikSum_local_conf #+ loglikSum_flight_info #+ loglikSum_local_conf #+ loglikSum_int_conf #+ loglikSum_local_conf
   exp(loglikSum) # convert to normal probability
 
 }
