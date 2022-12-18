@@ -18,9 +18,9 @@ Data loading and model run script is in `scripts/main_model.r`. Calls the follow
 
 The code and data used for V1 of [our pre-print on early transmission dynamics](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1) can be found in `stoch_model_V1_paper`, with same paths as above.
 
-The code and data used for our final Lancet Infectious Diseases paper can be found in `stoch_model_V2_paper`, with same paths as above.
+The code and data used for our final [Lancet Infectious Diseases paper](https://www.thelancet.com/article/S1473-3099(20)30144-4/fulltext) can be found in `stoch_model_V2_paper`, with same paths as above.
 
 
 #### Reference
 
-[Kucharski AJ, Russell TW, Diamond C et al. Early dynamics of transmission and control of 2019-nCoV: a mathematical modelling study. Lancet Infectious Diseases, 2020](https://www.medrxiv.org/content/10.1101/2020.01.31.20019901v1)
+[Kucharski AJ, Russell TW, Diamond C et al. Early dynamics of transmission and control of 2019-nCoV: a mathematical modelling study. Lancet Infectious Diseases, 2020](https://www.thelancet.com/article/S1473-3099(20)30144-4/fulltext)
